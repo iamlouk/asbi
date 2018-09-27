@@ -1,0 +1,11 @@
+*.o
+*.so
+*.a
+*.swp
+*.hh.gch
+vgcore.*
+
+old_*
+
+asbi
+

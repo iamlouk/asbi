@@ -1,0 +1,130 @@
+
+println("Hello, World! (", __file, ")");
+
+let rand := () -> toInt(random() * 100), unsorted := [,];
+
+// empty list: `[,]` empty map: `[~]`
+let fibs := [1, 1], obj := [ "abc" ~ 123, :symbol ~ [~], 42.42 ~ "world" ];
+
+// recursive
+let fib := (n) -> if n < 2 { 1 } else { fib(n - 1) + fib(n - 2) };
+
+// iter
+let getFib1 := (n) -> {
+	let a := 1, b := 1;
+	for let i := 1; i < n; i := i + 1 {
+		let tmp := a;
+		a := a + b;
+		b := tmp;
+	};
+	a
+};
+
+// dynamic
+// where in python you would write `fibs[n]` in yii you write `fibs.n`
+let getFib2 := (n) -> if fibs.n != nil { fibs.n } else {
+	fibs.n := getFib2(n - 1) + getFib2(n - 2)
+};
+
+getFib2(20);
+println("fibs: ", fibs);
+
+
+assert("fibs1", getFib1(3) = getFib2(3));
+assert("fibs2", getFib1(4) = getFib2(4));
+assert("fibs3", getFib1(5) = getFib2(5));
+
+
+// destruction + matching
+[1, 2, 3, fib4, 8] := [fib(1), fib(2), fib(3), fib(4), fib(5)];
+assert("fibs4", fib4 == fib(4));
+
+/*
+ * comments c style or using the #
+ *
+ * obj:key <-> obj.(:key)
+ */
+
+obj:sum := (l) -> {
+	let i := 0, s := 0;
+	for l.i != nil {
+		s := l.i + s;
+		i := i + 1;
+	};
+	s
+};
+
+obj:c := 5;
+obj.(:c) := 3.14;
+let zweiundvierzig := obj.:sum([12, 8, 15, 7]);
+assert("zweiundvierzig", zweiundvierzig = 42);
+assert("", obj.(:c) = 3.14);
+
+let sive := [false, false], n := 100, primes := [,];
+
+for let i := 0; i < n; i := i + 1 {
+	if sive.i != false {
+		primes.{len(primes)} := i;
+
+		for let j := i * 2; j < n; j := j + i {
+			sive.j := false;
+		};
+	};
+};
+
+println("primes: ", primes);
+
+let isPrime := (n) -> if n < 3 { n = 2 } else {
+	let isPrime := true;
+	for let i := 2; (i < (n + 1) / 2) & isPrime; i := i + 1 {
+		if mod(n, i) = 0 {
+			isPrime := false;
+		};
+	};
+	isPrime
+};
+
+
+let bubblesort := (list) -> {
+	let swap := true;
+	for swap { // for loops work like in golang
+		swap := false;
+		for let i := 0; i < len(list) - 1; i := i + 1 {
+			if list.(i) > list.(i + 1) {
+				let tmp := list.i;
+				list.i := list.(i + 1);
+				list.(i + 1) := tmp;
+				swap := true;
+			};
+		};
+	};
+	list
+};
+
+let n := {
+	(() -> {})();
+	20 // last expr-value in block is returned
+};
+
+for let i := 0; i < n; i := i + 1 { unsorted.i := rand(); };
+
+let sorted := bubblesort(unsorted);
+
+for let i := 0; i < 10; i := i + 1 {
+	assert("primes", isPrime(primes.i));
+	assert("sorted", sorted.i < sorted.(i+1) | sorted.i = sorted.(i+1));
+};
+
+println("bubblesorted: ", sorted);
+
+import("./linkedlist.asbi");
+
+[toArray, mergesort, toLinkedList, randomList] := import("./linkedlist.asbi");
+import("./linkedlist.asbi"); // imports are "cached"
+
+println(
+	"mergesorted: ",
+	toArray(
+		mergesort(
+			toLinkedList(
+				randomList(20, 0, 100)))));
