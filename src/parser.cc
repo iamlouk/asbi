@@ -2,6 +2,7 @@
 #include <memory>
 #include <map>
 #include <utility>
+#include <iostream>
 #include "utils.hh"
 #include "parser.hh"
 #include "tokenizer.hh"
@@ -85,27 +86,6 @@ ast::Node* Parser::parse_controllflow() {
 }
 
 ast::Node* Parser::parse_assign() {
-	if (tokenizer.peek().type == tok::Let) {
-		std::vector<std::pair<ast::Variable*, ast::Node*>> decls;
-		do {
-			tokenizer.next();
-			auto node = parse_logic();
-			auto var = dynamic_cast<ast::Variable*>(node);
-			if (var == nullptr)
-				throw utils::parser_error("expected Variable", node);
-
-			ast::Node* val = nullptr;
-			if (tokenizer.peek().type == tok::Assign) {
-				tokenizer.next();
-				val = parse_logic();
-			}
-
-			decls.push_back(std::make_pair(var, val));
-		} while (tokenizer.peek().type == tok::Comma);
-
-		return new ast::Let(std::move(decls));
-	}
-
 	auto left = parse_logic();
 	if (tokenizer.peek().type == tok::Assign) {
 		tokenizer.next();
@@ -118,6 +98,36 @@ ast::Node* Parser::parse_assign() {
 		ast::Access* acs = dynamic_cast<ast::Access*>(left);
 		if (acs != nullptr)
 			return new ast::AssignAccess(acs, right);
+
+		throw utils::parser_error("one can only assign to variables or dict subscripts", left);
+	}
+
+	if (tokenizer.peek().type == tok::Declare) {
+		auto tok = tokenizer.next();
+
+		auto right = parse_expr();
+		auto var = dynamic_cast<ast::Variable*>(left);
+		if (var != nullptr) {
+			std::vector<std::pair<ast::Variable*, ast::Node*>> decls;
+			decls.push_back(std::make_pair(var, right));
+			while (tokenizer.peek().type == tok::Comma) {
+				tokenizer.next();
+				auto node = parse_logic();
+				auto var = dynamic_cast<ast::Variable*>(node);
+				if (var == nullptr)
+					throw utils::parser_error("expected Variable", node);
+
+				ast::Node* val = nullptr;
+				if (tokenizer.peek().type == tok::Declare) {
+					tokenizer.next();
+					val = parse_logic();
+				}
+
+				decls.push_back(std::make_pair(var, val));
+			}
+
+			return new ast::VariableDecl(std::move(decls));
+		}
 
 		ast::List* list = dynamic_cast<ast::List*>(left);
 		if (list != nullptr) {
@@ -144,8 +154,9 @@ ast::Node* Parser::parse_assign() {
 			throw utils::parser_error("unimplemented!", left);
 		}
 
-		throw utils::parser_error("one can only assign to variables (or destruct)", left);
+		throw utils::parser_error("one can only declare variables or destruct using ':='", tok /*left*/);
 	}
+
 	return left;
 }
 

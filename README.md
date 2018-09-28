@@ -20,10 +20,10 @@ make test
 ```js
 // example:
 
-let fibs := [1, 1];
-let fib := (i) -> if fibs.i != nil { fibs.i } else { fibs.i := fib(i - 1) + fib(i - 2) };
+fibs := [1, 1];
+fib := (i) -> if fibs.i != nil { fibs.i } else { fibs.i = fib(i - 1) + fib(i - 2) };
 
-assert(fib(3) + fib(4) = fib(5));
+assert("fibonacci sequence", fib(3) + fib(4) = fib(5));
 ```
 
 ## Globals/Constants/Builtins:
@@ -38,6 +38,6 @@ assert(fib(3) + fib(4) = fib(5));
 - implement `try`-`catch`?
 - new tuple type
 - encode stuff like jump location, number of arguments, etc. in opcode
-- `++`/increment operator, replace `=` with `==` and `let ...` with `:=` (similar to golang)
+- `++`/increment operator, `<=` and `>=` operators, replace `=` with `==` and `let ...` with `:=` (similar to golang)
 - function interface and objects with external information
 - eventloop

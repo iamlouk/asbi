@@ -15,7 +15,6 @@ static std::map<std::string, Token> keywords = {
 	{ "true",   Token(Bool, 1, 0) },
 	{ "false",  Token(Bool, 0, 0) },
 	{ "nil",    Token(Nil, 0)     },
-	{ "let",    Token(Let, 0)     },
 };
 
 static bool is_identifier(char c) {
@@ -158,7 +157,7 @@ Token Tokenizer::next() {
 			pos++;
 			return Token(Equals, line);
 		}
-		return Token(Equals, line);
+		return Token(Assign, line);
 	case '|':
 		pos++;
 		return Token(Or, line);
@@ -172,7 +171,7 @@ Token Tokenizer::next() {
 		pos++;
 		if (pos < source.length() && source[pos] == '=') {
 			pos++;
-			return Token(Assign, line);
+			return Token(Declare, line);
 		}
 		if (pos < source.length() && source[pos] == ':') {
 			pos++;
@@ -237,6 +236,7 @@ std::string tok::to_string(Token token) {
 		return std::string("Bool(") + (token.integer ? "true" : "false") + ")";
 	case Nil:       return std::string("Nil");
 	case Assign:    return std::string("Assign");
+	case Declare:   return std::string("Declare");
 	case Plus:      return std::string("Plus");
 	case Minus:     return std::string("Minus");
 	case Mul:       return std::string("Mul");
@@ -271,7 +271,6 @@ std::string tok::to_string(Token token) {
 	case If:        return std::string("If");
 	case Else:      return std::string("Else");
 	case For:       return std::string("For");
-	case Let:       return std::string("Let");
 	case EOFTok:    return std::string("EOF");
 	}
 }

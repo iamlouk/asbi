@@ -9,8 +9,8 @@ ifdef RELEASE
 	CPPFLAGS += -O3 -DNDEBUG
 	LDFLAGS  += -O3
 else
-	CPPFLAGS += -O0 -g -fsanitize=address
-	LDFLAGS  += -O0 -g -fsanitize=address
+	CPPFLAGS += -O0 -g # -fsanitize=address (does not work with valgrind)
+	LDFLAGS  += -O0 -g # -fsanitize=address
 	OBJFILES += tests.o
 endif
 

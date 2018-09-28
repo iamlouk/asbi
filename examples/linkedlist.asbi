@@ -1,80 +1,81 @@
 
-let Element := (value, next) -> [:value ~ value, :next ~ next];
-let toLinkedList := (arr) -> {
-	let head := nil, last := nil, i := 0;
+Element := (value, next) -> [:value ~ value, :next ~ next];
+
+toLinkedList := (arr) -> {
+	head := nil, last := nil, i := 0;
 	for arr.i != nil {
-		if head = nil {
-			last := head := Element(arr.i, nil);
+		if head == nil {
+			last = head = Element(arr.i, nil);
 		} else {
-			last.:next := Element(arr.i, nil);
-			last := last.:next;
+			last.:next = Element(arr.i, nil);
+			last = last.:next;
 		};
-		i := i + 1;
+		i = i + 1;
 	};
 	head
 }, toArray := (elm) -> {
-	let arr := [,];
-	for let i := 0; elm != nil; i := i + 1 {
-		arr.i := elm.:value;
-		elm := elm.:next;
+	arr := [,];
+	for i := 0; elm != nil; i = i + 1 {
+		arr.i = elm.:value;
+		elm = elm.:next;
 	};
 	arr
-}, append := (ll, val) -> if ll = nil { Element(val, nil) } else {
-	let last := ll;
-	for last.:next != nil { last := last.:next };
-	last.:next := Element(val, nil);
+}, append := (ll, val) -> if ll == nil { Element(val, nil) } else {
+	last := ll;
+	for last.:next != nil { last = last.:next };
+	last.:next = Element(val, nil);
 	ll
 }, merge := (la, lb) -> {
-	let merged := nil, mergedlast := nil;
+	merged := nil, mergedlast := nil;
 	for la != nil & lb != nil {
 		if la.:value > lb.:value {
-			if merged = nil {
-				merged := mergedlast := Element(lb.:value, nil);
+			if merged == nil {
+				merged = mergedlast = Element(lb.:value, nil);
 			} else {
-				mergedlast := (mergedlast.:next := Element(lb.:value, nil));
+				mergedlast = mergedlast.:next = Element(lb.:value, nil);
 			};
-			lb := lb.:next;
+			lb = lb.:next;
 		} else {
-			if merged = nil {
-				merged := mergedlast := Element(la.:value, nil);
+			if merged == nil {
+				merged = mergedlast = Element(la.:value, nil);
 			} else {
-				mergedlast := (mergedlast.:next := Element(la.:value, nil));
+				mergedlast = mergedlast.:next = Element(la.:value, nil);
 			};
-			la := la.:next;
+			la = la.:next;
 		}
 	};
 	for la != nil {
-		if merged = nil {
-			merged := mergedlast := Element(la.:value, nil);
+		if merged == nil {
+			merged = mergedlast = Element(la.:value, nil);
 		} else {
-			mergedlast := (mergedlast.:next := Element(la.:value, nil));
+			mergedlast = mergedlast.:next = Element(la.:value, nil);
 		};
-		la := la.:next;
+		la = la.:next;
 	};
 	for lb != nil {
-		if merged = nil {
-			merged := mergedlast := Element(lb.:value, nil);
+		if merged == nil {
+			merged = mergedlast = Element(lb.:value, nil);
 		} else {
-			mergedlast := (mergedlast.:next := Element(lb.:value, nil));
+			mergedlast = mergedlast.:next = Element(lb.:value, nil);
 		};
-		lb := lb.:next;
+		lb = lb.:next;
 	};
 	merged
-}, mergesort := (ll) -> if ll = nil | ll.:next = nil { ll } else {
-	let la := nil, lb := nil;
-	for let toggle := true; ll != nil; toggle := !toggle {
+}, mergesort := (ll) -> if ll == nil | ll.:next == nil { ll } else {
+	la := nil, lb := nil;
+	for toggle := true; ll != nil; toggle = !toggle {
 		if toggle {
-			la := append(la, ll.:value)
+			la = append(la, ll.:value)
 		} else {
-			lb := append(lb, ll.:value)
+			lb = append(lb, ll.:value)
 		};
-		ll := ll.:next;
+		ll = ll.:next;
 	};
 	merge(mergesort(la), mergesort(lb))
 }, randomList := (n, min, max) -> {
-	let arr := [,];
-	for let i := 0; i < n; i := i + 1 {
-		arr.i := toInt(min + random() * (max - min))
+	arr := [,];
+	for i := 0; i < n; i = i + 1 {
+		arr.i = toInt(min + random() * (max - min))
 	};
 	arr
 };
@@ -86,5 +87,5 @@ if __main == __file {
 				toLinkedList(
 					randomList(10, 0, 1000)))));
 } else {
-	exports := [toArray, mergesort, toLinkedList, randomList];
+	exports = [toArray, mergesort, toLinkedList, randomList];
 }

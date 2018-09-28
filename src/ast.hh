@@ -59,10 +59,10 @@ namespace ast {
 		void to_vmops(asbi::Context*, std::vector<asbi::OpCode>&) const override;
 	};
 
-	class Let: public Node {
+	class VariableDecl: public Node {
 	public:
-		Let(std::vector<std::pair<Variable*, Node*>> decls): decls(decls) {}
-		~Let();
+		VariableDecl(std::vector<std::pair<Variable*, Node*>> decls): decls(decls) {}
+		~VariableDecl();
 		std::vector<std::pair<Variable*, Node*>> decls;
 		Node* optimize(void) override;
 		void to_vmops(asbi::Context*, std::vector<asbi::OpCode>&) const override;
@@ -78,6 +78,7 @@ namespace ast {
 		void to_vmops(asbi::Context*, std::vector<asbi::OpCode>&) const override;
 	};
 
+	/*
 	class DestructMap: public Node {
 	public:
 		DestructMap(std::vector<std::pair<Variable*, Node*>> vars, Node* val): vars(vars), val(val) {}
@@ -87,6 +88,7 @@ namespace ast {
 		Node* optimize(void) override;
 		// void to_vmops(asbi::Context*, std::vector<asbi::OpCode>&) const override;
 	};
+	*/
 
 	class AssignVariable: public Node {
 	public:

@@ -9,7 +9,9 @@ namespace tok {
 	enum Type {
 		Identifier, Int, Real, String, Bool, Nil,
 
-		Assign, Plus, Minus, Mul, Div, Arrow, KeyValue,
+		Assign,
+		Declare,
+		Plus, Minus, Mul, Div, Arrow, KeyValue,
 		Equals, EqualsNot, Smaller, Bigger,
 		Not, Or, And,
 
@@ -18,7 +20,7 @@ namespace tok {
 		LeftSquareBracket, RightSquareBracket,
 		Comma, Semicolon, Colon, Dot, DoubleColon,
 
-		Let, If, Else, For,
+		If, Else, For,
 
 		EOFTok
 	};

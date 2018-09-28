@@ -150,7 +150,7 @@ void PrefxOperator::to_vmops(Context* ctx, std::vector<OpCode> &ops) const {
 }
 
 
-Let::~Let() {
+VariableDecl::~VariableDecl() {
 	for (auto [var, val] : decls) {
 		delete var;
 		if (val != nullptr)
@@ -158,7 +158,7 @@ Let::~Let() {
 	}
 }
 
-void Let::to_vmops(asbi::Context* ctx, std::vector<asbi::OpCode> &ops) const {
+void VariableDecl::to_vmops(asbi::Context* ctx, std::vector<asbi::OpCode> &ops) const {
 	for (auto [var, val]: decls) {
 		if (val == nullptr)
 			ops.push_back(OpCode::PUSH_NIL);
@@ -203,7 +203,7 @@ DestructList::~DestructList() {
 	delete rhs;
 }
 
-
+/*
 DestructMap::~DestructMap() {
 	for (auto [a, b]: vars) {
 		delete a;
@@ -211,7 +211,7 @@ DestructMap::~DestructMap() {
 	}
 	delete val;
 }
-
+*/
 
 void If::to_vmops(Context* ctx, std::vector<OpCode> &ops) const {
 	cond->to_vmops(ctx, ops);

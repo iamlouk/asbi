@@ -29,20 +29,21 @@ namespace tests {
 
 		test("(true & true) & !((false & true) | (true  & false) | (false & false))", Value::boolean(true));
 		test("(true | true) & (false | true) & (true | false) & !(false | false)", Value::boolean(true));
-		test("3 - 2 = 1 & 6 / 2 = 3 & 1 + 2 = 3 & 3.14 > 0.1 + 2 & 10 < 100", Value::boolean(true));
-		test("(if true { 1 } else { 2 }) = 1 & (if false { 2 } else {}) = nil", Value::boolean(true));
+		test("3 - 2 == 1 & 6 / 2 == 3 & 1 + 2 == 3 & 3.14 > 0.1 + 2 & 10 < 100", Value::boolean(true));
+		test("(if true { 1 } else { 2 }) == 1 & (if false { 2 } else {}) == nil", Value::boolean(true));
 		test("if false { 1 } else if true { true & false; 3.14 + 42; 2 } else { 3 }", Value::number(2));
-		test(":hello_world != \"Hallo Welt!\" & (\"hello\" + \"world\") = \"helloworld\"", Value::boolean(true));
-		test("let a := 6; a := 42; a := a = 42 & { let b := 12; b } = 12; a", Value::boolean(true));
-		test("let sum := 0; for let i := 1; i < 6; i := i + 1 { sum := sum + i; }; sum", Value::number(15));
-		test("let add := (a, b) -> a + b, sub := (a, b) -> a - b; add(28, 14) = sub(45, 3)", Value::boolean(true));
-		test("let fib := (n) -> if n < 2 { 1 } else { fib(n - 1) + fib(n - 2) }; fib(5) = fib(4) + fib(3)", Value::boolean(true));
-		test("let fibGen := () -> { let a := 1, b := 1; () -> { let tmp := a; a := a + b; b := tmp } }; let fibs := fibGen(); fibs() + fibs() = fibs()", Value::boolean(true));
-		test("let arr := [\"hello\", :symbol, 3.14, 42], map := [1234 ~ \"value\", 42 ~ [,], :key ~ 42]; (arr.3 + map.:key) / 2", Value::number(42));
-		test("let arr := [:key ~ \"value\"]; arr.:key = \"value\" & { arr.:key := 42; arr.:key = 42 }", Value::boolean(true));
-		test("(\"hallo\" + (\" \" + \"welt\")) = \"hallo welt\"", Value::boolean(true));
-		test("let fibs := [1, 1], fib := (n) -> if fibs.n != nil { fibs.n } else { fibs.n := fib(n - 1) + fib(n - 2) }; fib(5)", Value::number(8));
-		
+		test(":hello_world != \"Hallo Welt!\" & (\"hello\" + \"world\") == \"helloworld\"", Value::boolean(true));
+		test("a := 6; a = 42; a = a == 42 & { b := 12; b } == 12; a", Value::boolean(true));
+		test("sum := 0; for i := 1; i < 6; i := i + 1 { sum = sum + i; }; sum", Value::number(15));
+		test("add := (a, b) -> a + b, sub := (a, b) -> a - b; add(28, 14) == sub(45, 3)", Value::boolean(true));
+		test("fib := (n) -> if n < 2 { 1 } else { fib(n - 1) + fib(n - 2) }; fib(5) == fib(4) + fib(3)", Value::boolean(true));
+		test("fibGen := () -> { a := 1, b := 1; () -> { tmp := a; a = a + b; b = tmp } }; fibs := fibGen(); fibs() + fibs() == fibs()", Value::boolean(true));
+		test("arr := [\"hello\", :symbol, 3.14, 42], map := [1234 ~ \"value\", 42 ~ [,], :key ~ 42]; (arr.3 + map.:key) / 2", Value::number(42));
+		test("arr := [:key ~ \"value\"]; arr.:key == \"value\" & { arr.:key = 42; arr.:key == 42 }", Value::boolean(true));
+		test("(\"hallo\" + (\" \" + \"welt\")) == \"hallo welt\"", Value::boolean(true));
+		test("fibs := [1, 1], fib := (n) -> if fibs.n != nil { fibs.n } else { fibs.n = fib(n - 1) + fib(n - 2) }; fib(5)", Value::number(8));
+		test("nil", Value::nil());
+
 	}
 
 }

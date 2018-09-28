@@ -154,7 +154,7 @@ Node* PrefxOperator::optimize() {
 	}
 }
 
-Node* Let::optimize() {
+Node* VariableDecl::optimize() {
 	for (auto &pair : decls)
 		if (pair.second != nullptr)
 			pair.second = pair.second->optimize();
@@ -180,10 +180,12 @@ Node* DestructList::optimize() {
 	rhs = rhs->optimize();
 	return this;
 }
+/*
 Node* DestructMap::optimize() {
 	val = val->optimize();
 	return this;
 }
+*/
 Node* AssignVariable::optimize() {
 	val = val->optimize();
 	return this;
