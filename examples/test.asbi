@@ -120,6 +120,7 @@ println("bubblesorted: ", sorted);
 
 [toArray, mergesort, toLinkedList, randomList] := import("./linkedlist.asbi");
 import("./linkedlist.asbi"); // imports are "cached" (__imports)
+// println("__imports: ", __imports
 
 println(
 	"mergesorted: ",

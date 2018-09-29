@@ -29,6 +29,11 @@ Env::~Env() {
 }
 
 void Env::gc_visit() const {
+	if (gc_visited)
+		return;
+
+	gc_visited = true;
+
 	for (auto [key, val]: vars)
 		val.gc_visit();
 
@@ -37,6 +42,18 @@ void Env::gc_visit() const {
 
 	if (caller != nullptr)
 		caller->gc_visit();
+}
+void Env::gc_unvisit() const {
+	if (!gc_visited)
+		return;
+
+	gc_visited = false;
+
+	if (outer != nullptr)
+		outer->gc_unvisit();
+
+	if (caller != nullptr)
+		caller->gc_unvisit();
 }
 Value Env::lookup(StringContainer* sc) {
 	auto env = this;

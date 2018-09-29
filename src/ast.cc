@@ -116,7 +116,9 @@ void InfixOperator::to_vmops(Context* ctx, std::vector<OpCode> &ops) const {
 		ops.push_back(OpCode::BIGGER);
 		return;
 	case InfixOperator::BiggerOrEqual:
-		throw std::runtime_error("unimplemented!");
+		lhs->to_vmops(ctx, ops);
+		rhs->to_vmops(ctx, ops);
+		ops.push_back(OpCode::BIGGER_OR_EQUAL);
 		return;
 	case InfixOperator::Smaller:
 		lhs->to_vmops(ctx, ops);
@@ -124,7 +126,9 @@ void InfixOperator::to_vmops(Context* ctx, std::vector<OpCode> &ops) const {
 		ops.push_back(OpCode::SMALLER);
 		return;
 	case InfixOperator::SmallerOrEqual:
-		throw std::runtime_error("unimplemented!");
+		lhs->to_vmops(ctx, ops);
+		rhs->to_vmops(ctx, ops);
+		ops.push_back(OpCode::SMALLER_OR_EQUAL);
 		return;
 	}
 }

@@ -180,9 +180,17 @@ Token Tokenizer::next() {
 		return Token(Colon, line);
 	case '<':
 		pos++;
+		if (pos < source.length() && source[pos] == '=') {
+			pos++;
+			return Token(SmallerOrEqual, line);
+		}
 		return Token(Smaller, line);
 	case '>':
 		pos++;
+		if (pos < source.length() && source[pos] == '=') {
+			pos++;
+			return Token(BiggerOrEqual, line);
+		}
 		return Token(Bigger, line);
 	case ';':
 		pos++;
@@ -250,6 +258,10 @@ std::string tok::to_string(Token token) {
 	case Not:       return std::string("Not");
 	case Or:        return std::string("Or");
 	case And:       return std::string("And");
+	case SmallerOrEqual:
+		return std::string("SmallerOrEqual");
+	case BiggerOrEqual:
+		return std::string("BiggerOrEqual");
 	case LeftBracket:
 		return std::string("LeftBracket");
 	case RightBracket:

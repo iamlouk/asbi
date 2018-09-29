@@ -48,4 +48,7 @@ void asbi::Context::gc(std::shared_ptr<Env> env){
 			p = &obj->gc_next;
 		}
 	}
+
+	if (env != nullptr)
+		env->gc_unvisit();
 }

@@ -12,7 +12,7 @@ namespace tok {
 		Assign,
 		Declare,
 		Plus, Minus, Mul, Div, Arrow, KeyValue,
-		Equals, EqualsNot, Smaller, Bigger,
+		Equals, EqualsNot, Smaller, Bigger, SmallerOrEqual, BiggerOrEqual,
 		Not, Or, And,
 
 		LeftBracket, RightBracket,

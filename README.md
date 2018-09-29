@@ -38,6 +38,7 @@ assert("fibonacci sequence", fib(3) + fib(4) = fib(5));
 - implement `try`-`catch`?
 - new tuple type
 - encode stuff like jump location, number of arguments, etc. in opcode
-- `++`/increment operator, `<=` and `>=` operators, replace `=` with `==` and `let ...` with `:=` (similar to golang)
-- function interface and objects with external information
+- `++`/increment operator, `<=` and `>=` operators, `...` as tail and by key destruction
+- function interface and native c/c++ objects (`Context*`)
 - eventloop
+- a way to access environment variables and argv, run shell commands, etc.

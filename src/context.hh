@@ -14,25 +14,29 @@ namespace asbi {
 
 	// TODO: gc_reset() um gc_inuse zurueck zu setzten bzw. gc_visit() gc_inuse setzten lassen
 	class Env {
+		friend Context;
+		friend Value execute(std::vector<OpCode>, std::shared_ptr<Env>, Context*);
 	public:
 		Env(Context*, std::shared_ptr<Env>);
 		~Env();
-		void gc_visit() const;
 		Value lookup(StringContainer*);
 		Value lookup(Context*, const char*);
 		void decl(StringContainer*, Value);
 		void decl(Context*, const char*, Value);
 		void set(StringContainer*, Value);
-
+		void gc_visit() const;
+	private:
 		std::shared_ptr<Env> outer;
 		std::shared_ptr<Env> caller;
-	private:
 		std::unordered_map<
 			StringContainer*,
 			Value,
 			StringContainer::hashStructPointer,
 			StringContainer::equalStructPointer
 		> vars;
+
+		mutable bool gc_visited = false;
+		void gc_unvisit() const;
 	};
 
 	class Context {
@@ -40,8 +44,7 @@ namespace asbi {
 		friend Value execute(std::vector<OpCode>, std::shared_ptr<Env>, Context*);
 	private:
 		// std::vector<StringContainer*> stringconstants; // TODO: vector durch map ersetzen?
-		std::vector<StringContainer*> strconsts[16];
-
+		std::vector<StringContainer*> strconsts[32];
 
 		void load_macros();
 

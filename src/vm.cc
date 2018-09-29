@@ -77,9 +77,9 @@ Value asbi::execute(std::vector<OpCode> opcodes, std::shared_ptr<Env> env, Conte
 					throw std::runtime_error("callable argnum does not match call");
 
 				auto lbdenv = std::make_shared<Env>(ctx, lc->env);
-				for (unsigned int i = 0; i < n; ++i) {
+				for (unsigned int i = 0; i < n; ++i)
 					lbdenv->decl(lc->argnames[i], ctx->pop());
-				}
+
 				lbdenv->caller = env;
 				ctx->push(execute(*lc->ops, lbdenv, ctx));
 				break;
@@ -180,6 +180,22 @@ Value asbi::execute(std::vector<OpCode> opcodes, std::shared_ptr<Env> env, Conte
 			if (a.type != type_t::Number || b.type != type_t::Number)
 				throw std::runtime_error("expected number");
 			ctx->push(Value::boolean(a._number > b._number));
+			break;
+		}
+		case SMALLER_OR_EQUAL:{
+			auto b = ctx->pop();
+			auto a = ctx->pop();
+			if (a.type != type_t::Number || b.type != type_t::Number)
+				throw std::runtime_error("expected number");
+			ctx->push(Value::boolean(a._number <= b._number));
+			break;
+		}
+		case BIGGER_OR_EQUAL:{
+			auto b = ctx->pop();
+			auto a = ctx->pop();
+			if (a.type != type_t::Number || b.type != type_t::Number)
+				throw std::runtime_error("expected number");
+			ctx->push(Value::boolean(a._number >= b._number));
 			break;
 		}
 		case NOT:{

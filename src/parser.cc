@@ -178,7 +178,7 @@ ast::Node* Parser::parse_logic() {
 ast::Node* Parser::parse_cmp() {
 	auto left = parse_addsub();
 	auto t = tokenizer.peek().type;
-	while (t == tok::Equals || t == tok::EqualsNot || t == tok::Smaller || t == tok::Bigger) {
+	while (t == tok::Equals || t == tok::EqualsNot || t == tok::Smaller || t == tok::Bigger || t == tok::SmallerOrEqual || t == tok::BiggerOrEqual) {
 		tokenizer.next();
 		auto right = parse_addsub();
 		if (t == tok::Equals)
@@ -187,8 +187,12 @@ ast::Node* Parser::parse_cmp() {
 			left = new ast::InfixOperator(ast::InfixOperator::EqualsNot, left, right);
 		else if (t == tok::Smaller)
 			left = new ast::InfixOperator(ast::InfixOperator::Smaller,   left, right);
-		else
+		else if (t == tok::Bigger)
 			left = new ast::InfixOperator(ast::InfixOperator::Bigger,    left, right);
+		else if (t == tok::SmallerOrEqual)
+			left = new ast::InfixOperator(ast::InfixOperator::SmallerOrEqual, left, right);
+		else if (t == tok::BiggerOrEqual)
+			left = new ast::InfixOperator(ast::InfixOperator::BiggerOrEqual,  left, right);
 		t = tokenizer.peek().type;
 	}
 	return left;

@@ -26,7 +26,6 @@ namespace tests {
 
 	void run(){
 
-
 		test("(true & true) & !((false & true) | (true  & false) | (false & false))", Value::boolean(true));
 		test("(true | true) & (false | true) & (true | false) & !(false | false)", Value::boolean(true));
 		test("3 - 2 == 1 & 6 / 2 == 3 & 1 + 2 == 3 & 3.14 > 0.1 + 2 & 10 < 100", Value::boolean(true));
@@ -42,7 +41,8 @@ namespace tests {
 		test("arr := [:key ~ \"value\"]; arr.:key == \"value\" & { arr.:key = 42; arr.:key == 42 }", Value::boolean(true));
 		test("(\"hallo\" + (\" \" + \"welt\")) == \"hallo welt\"", Value::boolean(true));
 		test("fibs := [1, 1], fib := (n) -> if fibs.n != nil { fibs.n } else { fibs.n = fib(n - 1) + fib(n - 2) }; fib(5)", Value::number(8));
-		test("nil", Value::nil());
+		test("if nil == {} {} else { [:would_fail] := [:no_match] }", Value::nil());
+		test("[a, :test, b, 123] := ((x) -> [x, :test, :b, 123])(42); a == 42 & b == :b", Value::boolean(true));
 
 	}
 
