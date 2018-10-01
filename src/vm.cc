@@ -71,24 +71,8 @@ Value asbi::execute(std::vector<OpCode> opcodes, std::shared_ptr<Env> env, Conte
 		case CALL:{
 			auto n = static_cast<unsigned int>(opcodes[pc++]);
 			auto callable = ctx->pop();
-			if (callable.type == type_t::Lambda) {
-				auto lc = callable._lambda;
-				if (lc->argnames.size() != n)
-					throw std::runtime_error("callable argnum does not match call");
-
-				auto lbdenv = std::make_shared<Env>(ctx, lc->env);
-				for (unsigned int i = 0; i < n; ++i)
-					lbdenv->decl(lc->argnames[i], ctx->pop());
-
-				lbdenv->caller = env;
-				ctx->push(execute(*lc->ops, lbdenv, ctx));
-				break;
-			}
-			if (callable.type == type_t::Macro) {
-				ctx->push(callable._macro(n, ctx, env));
-				break;
-			}
-			throw std::runtime_error("expected callable");
+			ctx->push(callable.call(ctx, n, env));
+			break;
 		}
 		case LOOKUP:{
 			auto raw = opcodes[pc++];
@@ -205,50 +189,50 @@ Value asbi::execute(std::vector<OpCode> opcodes, std::shared_ptr<Env> env, Conte
 			ctx->push(Value::boolean(!a._boolean));
 			break;
 		}
-		case MAKE_DICT_MAPLIKE:{
+		case MAKE_MAP:{
 			auto n = static_cast<unsigned int>(opcodes[pc++]);
-			auto dc = new DictContainer(ctx);
+			auto mc = new MapContainer(ctx);
 			for (unsigned int i = 0; i < n; ++i) {
-				dc->set(ctx->pop(), ctx->pop());
+				mc->set(ctx->pop(), ctx->pop());
 			}
 
-			ctx->push(Value::dict(dc));
-			ctx->heap_size += dc->gc_size();
+			ctx->push(Value::map(mc));
+			ctx->heap_size += mc->gc_size();
 			ctx->check_gc(env);
 			break;
 		}
-		case MAKE_DICT_ARRLIKE:{
+		case MAKE_MAP_ARRLIKE:{
 			auto n = static_cast<unsigned int>(opcodes[pc++]);
-			auto dc = new DictContainer(ctx);
+			auto mc = new MapContainer(ctx);
 			for (unsigned int i = 0; i < n; ++i) {
-				dc->set(Value::number(n - 1- i), ctx->pop());
+				mc->set(Value::number(n - 1- i), ctx->pop());
 			}
 
-			ctx->push(Value::dict(dc));
-			ctx->heap_size += dc->gc_size();
+			ctx->push(Value::map(mc));
+			ctx->heap_size += mc->gc_size();
 			ctx->check_gc(env);
 			break;
 		}
-		case GET_DICT_VAL:{
-			auto dict = ctx->pop();
-			if (dict.type != type_t::Dict)
-				throw std::runtime_error("expected dict");
+		case GET_MAP_VAL:{
+			auto map = ctx->pop();
+			if (map.type != type_t::Map)
+				throw std::runtime_error("expected map");
 
-			ctx->push(dict._dict->get(ctx->pop()));
+			ctx->push(map._map->get(ctx->pop()));
 			break;
 		}
-		case SET_DICT_VAL:{
-			auto dict = ctx->pop();
-			if (dict.type != type_t::Dict)
-				throw std::runtime_error("expected dict");
+		case SET_MAP_VAL:{
+			auto map = ctx->pop();
+			if (map.type != type_t::Map)
+				throw std::runtime_error("expected map");
 
 			auto val = ctx->pop();
 			auto key = ctx->pop();
-			auto prevsize = dict._dict->gc_size();
-			dict._dict->set(key, val);
-			if (prevsize < dict._dict->gc_size()) {
+			auto prevsize = map._map->gc_size();
+			map._map->set(key, val);
+			if (prevsize < map._map->gc_size()) {
 				ctx->heap_size -= prevsize;
-				ctx->heap_size += dict._dict->gc_size();
+				ctx->heap_size += map._map->gc_size();
 				ctx->push(val);
 				ctx->check_gc(env);
 				break;
@@ -258,13 +242,13 @@ Value asbi::execute(std::vector<OpCode> opcodes, std::shared_ptr<Env> env, Conte
 		}
 		case DESTRUCT_ARRLIKE:{
 			auto n = static_cast<unsigned int>(opcodes[pc++]);
-			auto dict = ctx->pop();
-			if (dict.type != type_t::Dict)
-				throw std::runtime_error("expected dict");
+			auto map = ctx->pop();
+			if (map.type != type_t::Map)
+				throw std::runtime_error("expected map");
 
 			for (unsigned int i = 0; i < n; ++i) {
 				auto tomatch = ctx->pop();
-				auto value = dict._dict->get(Value::number(i));
+				auto value = map._map->get(Value::number(i));
 				if (tomatch.type == type_t::StackPlaceholder) {
 					env->decl(tomatch._string, value);
 				} else {
@@ -273,7 +257,7 @@ Value asbi::execute(std::vector<OpCode> opcodes, std::shared_ptr<Env> env, Conte
 					}
 				}
 			}
-			ctx->push(dict);
+			ctx->push(map);
 			break;
 		}
 		case GOTO:{

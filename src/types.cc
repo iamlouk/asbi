@@ -7,8 +7,20 @@
 #include "mem.hh"
 #include "types.hh"
 #include "context.hh"
+#include "vm.hh"
 
 using namespace asbi;
+
+/*
+static std::size_t hash_cstr(const char* str) {
+	std::size_t hash = 4321;
+	int c;
+	while ((c = *str++))
+		hash = ((hash << 5) + hash) + c;
+
+	return hash;
+}
+*/
 
 StringContainer::StringContainer(std::string &data, std::size_t hash, Context* ctx, bool gc):
 	GCObj(ctx, gc), hash(hash), data(data) {}
@@ -45,9 +57,9 @@ std::size_t LambdaContainer::gc_size() const {
 	return sizeof(*this);
 }
 
-DictContainer::DictContainer(Context* ctx): GCObj(ctx, true) {}
+MapContainer::MapContainer(Context* ctx): GCObj(ctx, true) {}
 
-void DictContainer::gc_visit() const {
+void MapContainer::gc_visit() const {
 	if (gc_inuse)
 		return;
 
@@ -63,11 +75,11 @@ void DictContainer::gc_visit() const {
 	}
 }
 
-std::size_t DictContainer::gc_size() const {
+std::size_t MapContainer::gc_size() const {
 	return sizeof(*this) + (data.size() * sizeof(Value) * 2) + (vecdata.size() * sizeof(Value));
 }
 
-void DictContainer::set(Value key, Value val) {
+void MapContainer::set(Value key, Value val) {
 	unsigned int idx;
 	if (key.asUint(&idx)) {
 		while (vecdata.size() <= idx)
@@ -79,7 +91,7 @@ void DictContainer::set(Value key, Value val) {
 	}
 }
 
-Value DictContainer::get(Value key) {
+Value MapContainer::get(Value key) {
 	unsigned int idx;
 	if (key.asUint(&idx)) {
 		if (idx < vecdata.size())
@@ -113,6 +125,32 @@ Value Value::string(const char* str, Context* ctx) {
 	return val;
 }
 
+Value Value::string(std::string &str, Context *ctx) {
+	Value val;
+	val.type = type_t::String;
+	val._string = ctx->new_string(str);
+	return val;
+}
+
+Value Value::call(Context *ctx, unsigned int n, std::shared_ptr<Env> callerenv) const {
+	switch (type) {
+	case type_t::Lambda:{
+		if (_lambda->argnames.size() != n)
+			throw std::runtime_error("callable argnum does not match call");
+
+		auto lbdenv = std::make_shared<Env>(ctx, _lambda->env);
+		for (unsigned int i = 0; i < n; ++i)
+			lbdenv->decl(_lambda->argnames[i], ctx->pop());
+
+		lbdenv->caller = callerenv;
+		return execute(*_lambda->ops, lbdenv, ctx);
+	}
+	case type_t::Macro:
+		return _macro(n, ctx, callerenv);
+	default:
+		throw std::runtime_error("not callable");
+	}
+}
 
 bool Value::operator==(const Value &rhs) const {
 	assert(type != type_t::StackPlaceholder);
@@ -130,8 +168,8 @@ bool Value::operator==(const Value &rhs) const {
 		return _string->data == rhs._string->data;
 	case type_t::Lambda:
 		return _lambda == rhs._lambda;
-	case type_t::Dict:
-		return _dict->data == rhs._dict->data;
+	case type_t::Map:
+		return _map->data == rhs._map->data;
 	case type_t::Macro:
 		return _macro == rhs._macro;
 	case type_t::StackPlaceholder:
@@ -153,8 +191,8 @@ std::size_t Value::hash() const {
 		return _string->hash;
 	case type_t::Lambda:
 		return reinterpret_cast<std::size_t>(_lambda->ops);
-	case type_t::Dict:
-		return reinterpret_cast<std::size_t>(_dict);
+	case type_t::Map:
+		return reinterpret_cast<std::size_t>(_map);
 	case type_t::Macro:
 		return reinterpret_cast<std::size_t>(_macro);
 	case type_t::StackPlaceholder:
@@ -182,12 +220,12 @@ std::string Value::to_string(bool debug) const {
 		ss << "<Lambda#" << (void*)_lambda->ops << ">";
 		return ss.str();
 	}
-	case type_t::Dict:{
+	case type_t::Map:{
 		std::stringstream ss;
 		ss << "[";
-		for (auto val: _dict->vecdata)
+		for (auto val: _map->vecdata)
 			ss << val.to_string(true) << ", ";
-		for (auto [key, val]: _dict->data)
+		for (auto [key, val]: _map->data)
 			ss << key.to_string(true) << " ~ " << val.to_string(true) << ", ";
 		ss << "]";
 		return ss.str();
@@ -211,8 +249,8 @@ void Value::gc_visit() const {
 	case type_t::Lambda:
 		_lambda->gc_visit();
 		return;
-	case type_t::Dict:
-		_dict->gc_visit();
+	case type_t::Map:
+		_map->gc_visit();
 		return;
 	default:
 		return;

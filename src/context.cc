@@ -137,6 +137,11 @@ Value Context::run(const std::string& str, std::shared_ptr<Env> env) {
 	return execute(ops, env, this);
 }
 
+StringContainer* Context::new_stringconstant(const char* string) {
+	std::string cppstr = string;
+	return new_stringconstant(cppstr);
+}
+
 StringContainer* Context::new_stringconstant(std::string &string) {
 	std::size_t hash = std::hash<std::string>()(string);
 	auto &consts = strconsts[hash % (sizeof(strconsts) / sizeof(*strconsts))];
@@ -149,6 +154,23 @@ StringContainer* Context::new_stringconstant(std::string &string) {
 	return sc;
 }
 
+StringContainer* Context::new_string(const char* string) {
+	std::string cppstr = string;
+	return new_string(cppstr);
+}
+
 StringContainer* Context::new_string(std::string &string) {
 	return new StringContainer(string, std::hash<std::string>()(string), this, true);
+}
+
+Value Env::to_map(Context* ctx) const {
+	auto mc = new MapContainer(ctx);
+	for (auto [name, value]: vars) {
+		mc->set(Value::string(name), value);
+	}
+
+	if (outer != nullptr)
+		mc->set(Value::symbol("outer_scope", ctx), outer->to_map(ctx));
+
+	return Value::map(mc);
 }

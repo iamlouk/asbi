@@ -304,7 +304,7 @@ void List::to_vmops(Context* ctx, std::vector<OpCode> &ops) const {
 		node->to_vmops(ctx, ops);
 	}
 
-	ops.push_back(OpCode::MAKE_DICT_ARRLIKE);
+	ops.push_back(OpCode::MAKE_MAP_ARRLIKE);
 	ops.push_back(static_cast<OpCode>(values.size()));
 }
 
@@ -321,7 +321,7 @@ void Map::to_vmops(Context* ctx, std::vector<OpCode> &ops) const {
 		key->to_vmops(ctx, ops);
 	}
 
-	ops.push_back(OpCode::MAKE_DICT_MAPLIKE);
+	ops.push_back(OpCode::MAKE_MAP);
 	ops.push_back(static_cast<OpCode>(values.size()));
 }
 
@@ -337,7 +337,7 @@ Map::~Map() {
 void Access::to_vmops(Context* ctx, std::vector<OpCode> &ops) const {
 	right->to_vmops(ctx, ops);
 	left->to_vmops(ctx, ops);
-	ops.push_back(OpCode::GET_DICT_VAL);
+	ops.push_back(OpCode::GET_MAP_VAL);
 }
 
 
@@ -345,7 +345,7 @@ void AssignAccess::to_vmops(asbi::Context* ctx, std::vector<asbi::OpCode> &ops) 
 	acs->right->to_vmops(ctx, ops); // key
 	val->to_vmops(ctx, ops);        // value
 	acs->left->to_vmops(ctx, ops);  // dict
-	ops.push_back(OpCode::SET_DICT_VAL);
+	ops.push_back(OpCode::SET_MAP_VAL);
 }
 
 

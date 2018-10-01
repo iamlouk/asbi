@@ -1,12 +1,14 @@
 
 .PHONY: all clean test asbi-release
 
+SRC=$(shell find src -name "*.cc" -o -name "*.hh")
+
 all: asbi
 
-asbi:
+asbi: $(SRC)
 	make -C ./src ../asbi
 
-asbi-release:
+asbi-release: $(SRC)
 	RELEASE=1 make -C ./src --jobs=4 ../asbi
 
 clean:

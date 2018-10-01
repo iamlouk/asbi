@@ -12,49 +12,13 @@
 namespace asbi {
 	class Context;         // forward decl.
 	class Env;             // forward decl.
-	class DictContainer;   // forward decl.
+	class StringContainer; // forward decl.
+	class LambdaContainer; // forward decl.
+	class MapContainer;    // forward decl.
 	enum OpCode: uint64_t; // forward decl.
 
 	enum class type_t {
-		Bool, Number, Nil, Symbol, String, Lambda, Dict, Macro, StackPlaceholder
-	};
-
-	class StringContainer: public GCObj {
-		friend Context;
-	private:
-		StringContainer(std::string &data, std::size_t hash, Context*, bool gc);
-		~StringContainer();
-	public:
-		struct hashStruct {
-			std::size_t operator()(const StringContainer &sc) const { return sc.hash; }
-		};
-		struct equalStruct {
-			bool operator()(const StringContainer &a, const StringContainer &b) const { return a.data == b.data; }
-		};
-		struct hashStructPointer {
-			std::size_t operator()(StringContainer*const &sc) const { return sc->hash; }
-		};
-		struct equalStructPointer {
-			bool operator()(StringContainer*const &a, StringContainer*const &b) const { return a->data == b->data; }
-		};
-		std::size_t hash;
-		std::string data;
-
-		void gc_visit() const override;
-		std::size_t gc_size() const override;
-	};
-
-	class LambdaContainer: public GCObj {
-	public:
-		LambdaContainer(std::shared_ptr<Env>, std::vector<OpCode>*, std::vector<StringContainer*>, Context*, bool gc);
-		~LambdaContainer();
-
-		std::shared_ptr<Env> env;
-		std::vector<OpCode>* ops;
-		std::vector<StringContainer*> argnames;
-
-		void gc_visit() const override;
-		std::size_t gc_size() const override;
+		Bool, Number, Nil, Symbol, String, Lambda, Map, Macro, StackPlaceholder
 	};
 
 	struct Value {
@@ -66,7 +30,7 @@ namespace asbi {
 			double _number;
 			StringContainer* _string;
 			LambdaContainer* _lambda;
-			DictContainer* _dict;
+			MapContainer* _map;
 			macro_t _macro;
 		};
 
@@ -110,6 +74,8 @@ namespace asbi {
 
 		static Value string(const char*, Context*);
 
+		static Value string(std::string&, Context*);
+
 		static inline Value lambda(LambdaContainer* lc) {
 			Value val;
 			val.type = type_t::Lambda;
@@ -117,10 +83,10 @@ namespace asbi {
 			return val;
 		}
 
-		static inline Value dict(DictContainer* dc) {
+		static inline Value map(MapContainer* dc) {
 			Value val;
-			val.type = type_t::Dict;
-			val._dict = dc;
+			val.type = type_t::Map;
+			val._map = dc;
 			return val;
 		}
 
@@ -149,11 +115,51 @@ namespace asbi {
 		std::size_t hash() const;
 		std::string to_string(bool debug) const;
 		void gc_visit() const;
-		inline bool asUint(unsigned int*) const;
+		bool asUint(unsigned int*) const;
+		Value call(Context*, unsigned int argcount, std::shared_ptr<Env> callerenv) const;
 	};
 
-	class DictContainer: public GCObj {
+	class StringContainer: public GCObj {
+		friend Context;
+	private:
+		StringContainer(std::string &data, std::size_t hash, Context*, bool gc);
+		~StringContainer();
 	public:
+		struct hashStruct {
+			std::size_t operator()(const StringContainer &sc) const { return sc.hash; }
+		};
+		struct equalStruct {
+			bool operator()(const StringContainer &a, const StringContainer &b) const { return a.data == b.data; }
+		};
+		struct hashStructPointer {
+			std::size_t operator()(StringContainer*const &sc) const { return sc->hash; }
+		};
+		struct equalStructPointer {
+			bool operator()(StringContainer*const &a, StringContainer*const &b) const { return a->data == b->data; }
+		};
+		std::size_t hash;
+		std::string data;
+
+		void gc_visit() const override;
+		std::size_t gc_size() const override;
+	};
+
+	class LambdaContainer: public GCObj {
+	public:
+		LambdaContainer(std::shared_ptr<Env>, std::vector<OpCode>*, std::vector<StringContainer*>, Context*, bool gc);
+		~LambdaContainer();
+
+		std::shared_ptr<Env> env;
+		std::vector<OpCode>* ops;
+		std::vector<StringContainer*> argnames;
+
+		void gc_visit() const override;
+		std::size_t gc_size() const override;
+	};
+
+	class MapContainer: public GCObj {
+	public:
+		// TODO: iterator
 		std::unordered_map<
 			Value,
 			Value,
@@ -162,7 +168,7 @@ namespace asbi {
 		> data;
 		std::vector<Value> vecdata;
 
-		DictContainer(Context*);
+		MapContainer(Context*);
 
 		void gc_visit() const override;
 		std::size_t gc_size() const override;

@@ -27,6 +27,7 @@ assert("fibonacci sequence", fib(3) + fib(4) = fib(5));
 ```
 
 ## Globals/Constants/Builtins:
+- look at the outer most `:outer_scope` in `__scope()`
 - `__file`: currently running file
 - `__main`: `__file` run from the command line
 - `println`: print arguments to `stdout`
@@ -38,7 +39,7 @@ assert("fibonacci sequence", fib(3) + fib(4) = fib(5));
 - implement `try`-`catch`?
 - new tuple type
 - encode stuff like jump location, number of arguments, etc. in opcode
-- `++`/increment operator, `<=` and `>=` operators, `...` as tail and by key destruction
+- `++`/increment operator, `...` as tail and by key destruction
 - function interface and native c/c++ objects (`Context*`)
 - eventloop
-- a way to access environment variables and argv, run shell commands, etc.
+- move constructor for StringContainer

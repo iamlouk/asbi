@@ -15,6 +15,7 @@ namespace asbi {
 	// TODO: gc_reset() um gc_inuse zurueck zu setzten bzw. gc_visit() gc_inuse setzten lassen
 	class Env {
 		friend Context;
+		friend Value;
 		friend Value execute(std::vector<OpCode>, std::shared_ptr<Env>, Context*);
 	public:
 		Env(Context*, std::shared_ptr<Env>);
@@ -25,6 +26,7 @@ namespace asbi {
 		void decl(Context*, const char*, Value);
 		void set(StringContainer*, Value);
 		void gc_visit() const;
+		Value to_map(Context*) const;
 	private:
 		std::shared_ptr<Env> outer;
 		std::shared_ptr<Env> caller;
@@ -71,7 +73,9 @@ namespace asbi {
 			StringContainer* __imports;
 			StringContainer* exports;
 		} names;
+		StringContainer* new_stringconstant(const char*);
 		StringContainer* new_stringconstant(std::string&);
+		StringContainer* new_string(const char*);
 		StringContainer* new_string(std::string&);
 
 		void check_gc(std::shared_ptr<Env>);

@@ -85,6 +85,17 @@ isPrime := (n) -> if n < 3 { n == 2 } else {
 };
 
 
+[true] := [fold(primes, true, (acc, key, value) -> {
+	acc & isPrime(value)
+})];
+
+assert("sum=15", fold([1, 2, 3, 4, 5], 0, (sum, key, val) -> sum + val) == 15);
+
+// map := (arr, fn) -> fold(arr, [,], (res, idx, value) -> { res.idx = fn(value); res });
+
+[1, 4, 9, 16, 25, 36] := map([1, 2, 3, 4, 5, 6], (key, x) -> x * x);
+
+
 bubblesort := (list) -> {
 	swap := true;
 	for swap { // for loops work like in golang
@@ -111,7 +122,7 @@ for i := 0; i < n; i = i + 1 { unsorted.i = rand(); };
 sorted := bubblesort(unsorted);
 
 for i := 0; i < 10; i = i + 1 {
-	assert("primes", isPrime(primes.i));
+	// assert("primes", isPrime(primes.i));
 	assert("sorted", sorted.i < sorted.(i+1) | sorted.i == sorted.(i+1));
 };
 
