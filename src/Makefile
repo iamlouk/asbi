@@ -1,6 +1,6 @@
 CPPC=clang
 CPPFLAGS= -std=c++17 -Wall -Wextra
-LDFLAGS=  -std=c++17 -pthread -lstdc++ -lm
+LDFLAGS=  -std=c++17 -pthread -lstdc++ -lm -lreadline
 
 EXEC=../asbi
 OBJFILES=tokenizer.o parser.o utils.o ast-optimize.o mem.o vm.o ast.o types.o context.o macros.o procenv.o
@@ -9,8 +9,8 @@ ifdef RELEASE
 	CPPFLAGS += -O3 -DNDEBUG
 	LDFLAGS  += -O3
 else
-	CPPFLAGS += -O0 -g # -fsanitize=address # (does not work with valgrind)
-	LDFLAGS  += -O0 -g # -fsanitize=address
+	CPPFLAGS += -O0 -g -fsanitize=address
+	LDFLAGS  += -O0 -g -fsanitize=address
 	OBJFILES += tests.o
 endif
 
@@ -30,17 +30,17 @@ $(EXEC): main.o $(OBJFILES)
 %.o: %.cc
 	$(CPPC) $(CPPFLAGS) -c -o $@ $<
 
-tokenizer.o: tokenizer.cc tokenizer.hh utils.hh
-parser.o: parser.cc parser.hh ast.hh tokenizer.hh utils.hh context.hh
-utils.o: utils.cc utils.hh ast.hh tokenizer.hh
-ast-optimize.o: ast-optimize.cc ast.hh
-mem.o: mem.cc mem.hh context.hh
-vm.o: vm.cc vm.hh types.hh context.hh
-ast.o: ast.cc ast.hh vm.hh context.hh
-types.o: types.cc types.hh vm.hh mem.hh context.hh
-context.o: context.cc context.hh types.hh vm.hh
-main.o: main.cc context.hh types.hh utils.hh procenv.hh
-tests.o: tests.cc context.hh types.hh vm.hh utils.hh parser.hh tokenizer.hh
-macros.o: macros.cc context.hh utils.hh types.hh
-procenv.o: procenv.cc procenv.hh context.hh types.hh
-
+tokenizer.o: tokenizer.cc include/tokenizer.hh include/utils.hh
+parser.o: parser.cc include/parser.hh include/ast.hh include/tokenizer.hh include/utils.hh include/context.hh
+utils.o: utils.cc include/utils.hh include/ast.hh include/tokenizer.hh
+ast-optimize.o: ast-optimize.cc include/ast.hh
+mem.o: mem.cc include/mem.hh include/context.hh
+vm.o: vm.cc include/vm.hh include/types.hh include/context.hh
+ast.o: ast.cc include/ast.hh include/vm.hh include/context.hh
+types.o: types.cc include/types.hh include/vm.hh include/mem.hh include/context.hh
+context.o: context.cc include/context.hh include/types.hh include/vm.hh
+main.o: main.cc include/context.hh include/types.hh include/utils.hh include/procenv.hh
+tests.o: tests.cc include/context.hh include/types.hh
+macros.o: macros.cc include/context.hh include/utils.hh include/types.hh
+procenv.o: procenv.cc include/procenv.hh include/context.hh include/types.hh
+events.o: events.cc include/events.hh include/context.hh include/types.hh

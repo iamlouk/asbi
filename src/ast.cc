@@ -1,8 +1,8 @@
 #include <string>
 #include <stdexcept>
 #include <cassert>
-#include "ast.hh"
-#include "vm.hh"
+#include "include/ast.hh"
+#include "include/vm.hh"
 
 using std::string;
 using namespace ast;

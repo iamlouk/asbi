@@ -3,8 +3,8 @@
 #include <iostream>
 #include <map>
 
-#include "utils.hh"
-#include "tokenizer.hh"
+#include "include/utils.hh"
+#include "include/tokenizer.hh"
 
 using namespace tok;
 

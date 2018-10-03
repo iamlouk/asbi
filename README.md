@@ -41,5 +41,14 @@ assert("fibonacci sequence", fib(3) + fib(4) = fib(5));
 - encode stuff like jump location, number of arguments, etc. in opcode
 - `++`/increment operator, `...` as tail and by key destruction
 - function interface and native c/c++ objects (`Context*`)
-- eventloop
 - move constructor for StringContainer
+- `::`/bind operator: `foo := (this, arg) -> this; obj::foo(arg) == obj`
+	- `"hallo welt"::str:split(" ")`
+- streams, system()-function
+- eventloop
+	- c/c++11 threads pool
+	- 2 Linked Blocking Queues
+	- sigalarm stuff (extra timeout queue?)?
+- restructure project
+	- header directory
+	- eventloop code directory

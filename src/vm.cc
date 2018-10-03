@@ -1,7 +1,7 @@
 #include <cassert>
 #include <stdexcept>
-#include "vm.hh"
-#include "context.hh"
+#include "include/vm.hh"
+#include "include/context.hh"
 
 using namespace asbi;
 

@@ -2,9 +2,9 @@
 #include <cstdlib>
 #include <fstream>
 #include <stdexcept>
-#include "utils.hh"
-#include "tokenizer.hh"
-#include "ast.hh"
+#include "include/utils.hh"
+#include "include/tokenizer.hh"
+#include "include/ast.hh"
 
 namespace utils {
 

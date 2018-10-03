@@ -3,9 +3,9 @@
 #include <cstdlib>
 #include <cmath>
 #include <cassert>
-#include "types.hh"
-#include "context.hh"
-#include "utils.hh"
+#include "include/types.hh"
+#include "include/context.hh"
+#include "include/utils.hh"
 
 using namespace asbi;
 
@@ -134,11 +134,11 @@ static Value macro_typeof(int n, Context* ctx, std::shared_ptr<Env>) {
 	case type_t::String:
 		return Value::symbol("string", ctx);
 	case type_t::Lambda:
-		return Value::symbol("lambda", ctx);
+		return Value::symbol("function", ctx);
 	case type_t::Map:
 		return Value::symbol("map", ctx);
 	case type_t::Macro:
-		return Value::symbol("macro", ctx);
+		return Value::symbol("function", ctx);
 	case type_t::StackPlaceholder:
 		assert(false);
 		return Value::symbol("internal_stack_placeholder", ctx);

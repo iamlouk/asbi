@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cassert>
-#include "mem.hh"
-#include "context.hh"
+#include "include/mem.hh"
+#include "include/context.hh"
 
 using namespace asbi;
 

@@ -4,10 +4,10 @@
 #include <cassert>
 #include <sstream>
 #include <cmath>
-#include "mem.hh"
-#include "types.hh"
-#include "context.hh"
-#include "vm.hh"
+#include "include/mem.hh"
+#include "include/types.hh"
+#include "include/context.hh"
+#include "include/vm.hh"
 
 using namespace asbi;
 
