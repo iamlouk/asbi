@@ -145,12 +145,12 @@ static Value macro_typeof(int n, Context* ctx, std::shared_ptr<Env>) {
 	}
 }
 
-static Value macro_fold(int n, Context* ctx, std::shared_ptr<Env> env) {
+static Value macro_reduce(int n, Context* ctx, std::shared_ptr<Env> env) {
 	auto map = ctx->pop();
 	auto acc = ctx->pop();
 	auto fn  = ctx->pop();
 	if (n != 3 || map.type != type_t::Map || fn.type != type_t::Lambda)
-		throw std::runtime_error("fold macro usage error");
+		throw std::runtime_error("reduce macro usage error");
 
 	auto &vecdata = map._map->vecdata;
 	for (unsigned int i = 0; i < vecdata.size(); ++i) {
@@ -213,7 +213,7 @@ void Context::load_macros() {
 	global_env->decl(this, "__scope",  Value::macro( macro_scope   ));
 	global_env->decl(this, "import",   Value::macro( macro_import  ));
 	global_env->decl(this, "typeof",   Value::macro( macro_typeof  ));
-	global_env->decl(this, "fold",     Value::macro( macro_fold    ));
+	global_env->decl(this, "reduce",   Value::macro( macro_reduce  ));
 	global_env->decl(this, "map",      Value::macro( macro_map     ));
 
 }

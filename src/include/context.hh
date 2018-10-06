@@ -8,6 +8,7 @@
 #include <memory>
 #include "mem.hh"
 #include "types.hh"
+#include "../events/loop.hh"
 
 namespace asbi {
 	enum OpCode: uint64_t; // forward decl.
@@ -59,6 +60,7 @@ namespace asbi {
 		Value run(const std::string&);
 		Value run(const std::string&, std::shared_ptr<Env>);
 
+		evts::Loop evtloop;
 		std::shared_ptr<Env> global_env;
 
 		std::vector<Value> stack;

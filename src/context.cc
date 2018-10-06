@@ -10,17 +10,6 @@
 
 using namespace asbi;
 
-void Context::push(Value v) {
-	stack.push_back(v);
-}
-
-Value Context::pop() {
-	Value v = stack.back();
-	assert(stack.size() > 0);
-	stack.pop_back();
-	return v;
-}
-
 Env::Env(Context*, std::shared_ptr<Env> outer) {
 	this->outer = outer;
 }
@@ -93,7 +82,7 @@ void Env::set(StringContainer* sc, Value val) {
 	throw std::runtime_error("variable not found in env");
 }
 
-Context::Context() {
+Context::Context(): evtloop(this, 0) {
 	global_env = std::make_shared<Env>(this, nullptr);
 
 	std::string str = "__file";
@@ -120,6 +109,17 @@ Context::~Context() {
 		delete lc->ops;
 		delete lc;
 	}
+}
+
+void Context::push(Value v) {
+	stack.push_back(v);
+}
+
+Value Context::pop() {
+	Value v = stack.back();
+	assert(stack.size() > 0);
+	stack.pop_back();
+	return v;
 }
 
 Value Context::run(const std::string& str) {

@@ -44,7 +44,7 @@ namespace tests {
 		test("if nil == {} {} else { [:would_fail] := [:no_match] }", Value::nil());
 		test("[a, :test, b, 123] := ((x) -> [x, :test, :b, 123])(42); a == 42 & b == :b", Value::boolean(true));
 		test("[1, 4, 9, 16, 25] := map([1, 2, 3, 4, 5], (_, x) -> x * x); nil", Value::nil());
-		test("fold([1, 2, 3, 4, 5], 0, (sum, _, x) -> sum + x)", Value::number(15));
+		test("reduce([1, 2, 3, 4, 5], 0, (sum, _, x) -> sum + x)", Value::number(15));
 
 	}
 

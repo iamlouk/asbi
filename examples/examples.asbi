@@ -85,11 +85,11 @@ isPrime := (n) -> if n < 3 { n == 2 } else {
 };
 
 
-[true] := [fold(primes, true, (acc, key, value) -> {
+[true] := [reduce(primes, true, (acc, key, value) -> {
 	acc & isPrime(value)
 })];
 
-assert("sum=15", fold([1, 2, 3, 4, 5], 0, (sum, key, val) -> sum + val) == 15);
+assert("sum=15", reduce([1, 2, 3, 4, 5], 0, (sum, key, val) -> sum + val) == 15);
 
 // map := (arr, fn) -> fold(arr, [,], (res, idx, value) -> { res.idx = fn(value); res });
 

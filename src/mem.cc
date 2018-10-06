@@ -38,8 +38,8 @@ void asbi::Context::gc(std::shared_ptr<Env> env){
 	auto p = &heap_head;
 	while (*p != nullptr) {
 		auto obj = *p;
-		assert(obj->gc_manage);
-		if (!obj->gc_inuse) {
+		// assert(obj->gc_manage); //
+		if (!obj->gc_inuse && obj->gc_manage) {
 			*p = obj->gc_next;
 			heap_size -= obj->gc_size();
 			delete obj;

@@ -7,6 +7,7 @@
 #include "include/types.hh"
 #include "include/utils.hh"
 #include "include/procenv.hh"
+#include "events/io.hh"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,7 +23,7 @@ namespace tests { void run(); }
 
 static const char* get_prompt(char* buf, size_t bufsize) {
 	char* wdbuf = getcwd(NULL, 0);
-	snprintf(buf, bufsize - 1, "\033[0;34m%s[asbi]:\033[0m\033[0;36m%s\033[0m \033[0;37m>_\033[0m ", getenv("USER"), wdbuf);
+	snprintf(buf, bufsize - 1, "\033[0;34m[%s]:\033[0m\033[0;36m%s\033[0m \033[0;37m>_\033[0m ", getenv("USER"), wdbuf);
 	free(wdbuf);
 	return buf;
 }
@@ -81,10 +82,12 @@ int main(int argc, const char *argv[]) {
 			ctx.global_env->decl(ctx.names.__imports, Value::map(new MapContainer(&ctx)));
 
 			load_procenv(&ctx, argc, argv);
+			load_evtio(&ctx);
 
 			std::string content;
 			utils::readfile(filepath, content);
 			ctx.run(content);
+			ctx.evtloop.start();
 		} else if (strcmp(arg, "--eval") == 0 && i + 1 < argc) {
 			Context ctx;
 			std::string str = argv[++i];

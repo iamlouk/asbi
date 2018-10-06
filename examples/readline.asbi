@@ -1,0 +1,6 @@
+
+readline((name) -> {
+	println("Hello, ", name, "!");
+});
+
+println("Your Name?");
