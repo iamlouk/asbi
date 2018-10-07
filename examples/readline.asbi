@@ -1,6 +1,22 @@
 
-readline((name) -> {
-	println("Hello, ", name, "!");
+counter := 5, name := nil;
+tick := () -> if (counter == 0) {
+	io:println("Hello, ", name, "!");
+} else {
+	io:println(counter, "...");
+	counter = counter - 1;
+};
+
+io:readline((_name) -> {
+	name = _name;
+	now := time:now();
+	for i := counter; i >= 0; i := i - 1 {
+		time:runat(now + i, tick);
+	}
 });
 
-println("Your Name?");
+io:println("Your Name?");
+
+time:runat(time:now() + 0.1, () -> {
+	io:println("one-tenth of a second passed...");
+});

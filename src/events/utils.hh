@@ -5,6 +5,8 @@
 #include <cassert>
 #include <mutex>
 #include <condition_variable>
+#include <chrono>
+#include <functional>
 
 namespace asbi::evts {
 
@@ -19,83 +21,95 @@ namespace asbi::evts {
 
 		void release();
 		void acquire();
+		bool tryAcquire();
+
+		// returns false if timed out
+		bool acquireFor(std::chrono::duration<double, std::milli>);
 	};
 
-	template <typename T> class BlockingLinkedList {
+	// get current timestamp
+	std::chrono::duration<double, std::milli> timestamp();
+
+	// std::chrono::duration<double, std::milli> to double (in seconds)
+	double to_double_seconds(std::chrono::duration<double, std::milli>);
+
+	// double (in seconds) to std::chrono::duration<double, std::milli>
+	std::chrono::duration<double, std::milli> to_chrono(double);
+
+
+	template<typename T, typename Comp = std::less<T>> class SortedQueue {
 	private:
-		struct Node {
+		class Node {
+		public:
 			Node(T value, Node* next): value(value), next(next) {}
 			T value;
 			Node* next;
 		};
 
-		std::mutex mut;
 		Node* head = nullptr;
-		Node* last = nullptr;
-
-		Semaphore sem;
-
 	public:
-		BlockingLinkedList(): sem(0) {}
-
-		void enqueue(T value) {
-			{
-				std::unique_lock<std::mutex> lock(mut);
-				if (last == nullptr) {
-					assert(head == nullptr);
-					last = head = new Node(value, nullptr);
-				} else {
-					assert(head != nullptr);
-					last = (last->next = new Node(value, nullptr));
-				}
-			}
-			sem.release();
-		}
-
-		T dequeue() {
-			sem.acquire();
-			std::unique_lock<std::mutex> lock(mut);
-			assert(head != nullptr && last != nullptr);
-			assert(last->next == nullptr);
-
-			auto node = head;
-			if (last == head)
-				last = nullptr;
-
-			head = head->next;
-
-			T value = node->value;
-			delete node;
-			return value;
-		}
-
-		// returns false if empty or true and writes to &val if not empty
-		bool tryDequeue(T& val) {
-			std::unique_lock<std::mutex> lock(mut);
-			if (head != nullptr) {
-				assert(last != nullptr && last->next == nullptr);
-
-				auto node = head;
-				if (last == head)
-					last = nullptr;
-
-				head = head->next;
-
-				val = node->value;
+		// SortedQueue();
+		~SortedQueue() {
+			for (Node* node = head; node != nullptr;) {
+				auto tmp = node->next;
 				delete node;
-				return true;
+				node = tmp;
 			}
-			return false;
 		}
 
-		bool empty() {
-			std::unique_lock<std::mutex> lock(mut);
-			return head == nullptr;
+		void insert(T in) {
+			Comp cmp = Comp();
+
+			/*int s1 = size();
+			Node **p = &head;
+			while (*p != nullptr && cmp((*p)->value, in))
+				p = &((*p)->next);
+
+			if (*p == nullptr) {
+				*p = node;
+			} else {
+			 	node->next = (*p)->next;
+				*p = node;
+			}
+			assert(s1 + 1 == size());*/
+
+
+
+			Node *drag = nullptr, *curr = head;
+			while (curr != nullptr && cmp(curr->value, in)) {
+				drag = curr;
+				curr = curr->next;
+			}
+
+			if (drag == nullptr)
+				head = new Node(in, head);
+			else
+				drag->next = new Node(in, curr);
+
+		}
+
+		T first() {
+			assert(head != nullptr);
+			return head->value;
+		}
+
+		void removeFirst() {
+			assert(head != nullptr);
+			auto tmp = head->next;
+			delete head;
+			head = tmp;
+		}
+
+		bool empty() { return head == nullptr; }
+
+		unsigned int size() {
+			unsigned int i = 0;
+			for (Node* node = head; node != nullptr; node = node->next)
+				i++;
+			return i;
 		}
 
 	};
-
-	void to_usecs(double in, useconds_t &out);
 
 }
 

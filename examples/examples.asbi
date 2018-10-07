@@ -1,5 +1,5 @@
 
-println("Hello, World! (", __file, ")");
+io:println("Hello, World! (", __file, ")");
 
 rand := () -> toInt(random() * 100), unsorted := [,];
 
@@ -27,7 +27,7 @@ getFib2 := (n) -> if fibs.n != nil { fibs.n } else {
 };
 
 getFib2(20);
-println("fibs: ", fibs);
+io:println("fibs: ", fibs);
 
 
 assert("fibs1", getFib1(3) == getFib2(3));
@@ -72,7 +72,7 @@ for i := 0; i < n; i = i + 1 {
 	};
 };
 
-println("primes: ", primes);
+io:println("primes: ", primes);
 
 isPrime := (n) -> if n < 3 { n == 2 } else {
 	isPrime := true;
@@ -126,14 +126,14 @@ for i := 0; i < 10; i = i + 1 {
 	assert("sorted", sorted.i < sorted.(i+1) | sorted.i == sorted.(i+1));
 };
 
-println("bubblesorted: ", sorted);
+io:println("bubblesorted: ", sorted);
 
 
 [toArray, mergesort, toLinkedList, randomList] := import("./linkedlist.asbi");
 import("./linkedlist.asbi"); // imports are "cached" (__imports)
-// println("__imports: ", __imports
+// io:println("__imports: ", __imports
 
-println(
+io:println(
 	"mergesorted: ",
 	toArray(
 		mergesort(

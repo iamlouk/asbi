@@ -35,10 +35,12 @@ assert("fibonacci sequence", fib(3) + fib(4) = fib(5));
 - new tuple type
 - encode stuff like jump location, number of arguments, etc. in opcode
 - `++`/increment operator, `...` as tail and by key destruction
+- `await`: replace `readline((line) -> {...})` with `line := await readline()`?
 - function interface and native c/c++ objects (`Context*`)
 - move constructor for `StringContainer`
 - `::`/bind operator: `foo := (this, arg) -> this; obj::foo(arg) == obj`
 	- `"hallo welt"::str:split(" ")`
-- streams, system()-function
+- system()-function
 - eventloop
-	- sigalarm stuff (extra timeout queue?)?
+	- intervals
+- plugin interface

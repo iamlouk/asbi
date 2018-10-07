@@ -7,7 +7,6 @@
 #include "include/types.hh"
 #include "include/utils.hh"
 #include "include/procenv.hh"
-#include "events/io.hh"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -82,7 +81,6 @@ int main(int argc, const char *argv[]) {
 			ctx.global_env->decl(ctx.names.__imports, Value::map(new MapContainer(&ctx)));
 
 			load_procenv(&ctx, argc, argv);
-			load_evtio(&ctx);
 
 			std::string content;
 			utils::readfile(filepath, content);

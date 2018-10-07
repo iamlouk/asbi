@@ -81,7 +81,7 @@ toLinkedList := (arr) -> {
 };
 
 if __main == __file {
-	println(
+	io:println(
 		toArray(
 			mergesort(
 				toLinkedList(

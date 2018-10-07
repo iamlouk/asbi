@@ -6,16 +6,13 @@
 #include "include/types.hh"
 #include "include/context.hh"
 #include "include/utils.hh"
+#include "events/utils.hh"
+
+#include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 using namespace asbi;
-
-static Value macro_println(int n, Context* ctx, std::shared_ptr<Env>) {
-	for (int i = 0; i < n; i++) {
-		std::cout << ctx->pop().to_string(false);
-	}
-	std::cout << '\n' << std::flush;
-	return Value::nil();
-}
 
 static Value macro_assert(int n, Context* ctx, std::shared_ptr<Env>) {
 	auto msg = ctx->pop();
@@ -196,6 +193,58 @@ static Value macro_map(int n, Context* ctx, std::shared_ptr<Env> env) {
 	return ctx->pop(); // res muss auf stack liegen weil GC
 }
 
+static Value macro_io_readline(int n, Context* ctx, std::shared_ptr<Env>) {
+	auto lambda = ctx->pop();
+	if (n != 1 || lambda.type != type_t::Lambda)
+		throw std::runtime_error("io:readline macro usage error");
+
+	ctx->evtloop.addTask(lambda._lambda, [ctx](evts::callback_t cb) -> void {
+		char* line = readline("");
+		std::vector<Value> args;
+		if (line == NULL)
+			args.push_back(Value::nil());
+		else
+			args.push_back(Value::string(line, ctx));
+		cb(&args, true);
+		free(line);
+	});
+
+	return Value::nil();
+}
+
+static Value macro_io_println(int n, Context* ctx, std::shared_ptr<Env>) {
+	for (int i = 0; i < n; i++) {
+		std::cout << ctx->pop().to_string(false);
+	}
+	std::cout << '\n' << std::flush;
+	return Value::nil();
+}
+
+static Value macro_io_print(int n, Context* ctx, std::shared_ptr<Env>) {
+	for (int i = 0; i < n; i++) {
+		std::cout << ctx->pop().to_string(false);
+	}
+	std::cout << std::flush;
+	return Value::nil();
+}
+
+static Value macro_time_now(int n, Context*, std::shared_ptr<Env>) {
+	if (n != 0)
+		throw std::runtime_error("time:now macro usage error");
+
+	return Value::number(evts::to_double_seconds(evts::timestamp()));
+}
+
+static Value macro_time_runAt(int n, Context* ctx, std::shared_ptr<Env>) {
+	auto timestamp = ctx->pop();
+	auto callback = ctx->pop();
+	if (n != 2 || timestamp.type != type_t::Number || callback.type != type_t::Lambda)
+		throw std::runtime_error("time:runat macro usage error");
+
+	ctx->evtloop.addTimer(callback._lambda, timestamp._number);
+	return Value::nil();
+}
+
 void Context::load_macros() {
 	static bool seeded = false;
 	if (!seeded) {
@@ -203,7 +252,6 @@ void Context::load_macros() {
 		srand((unsigned)time(nullptr));
 	}
 
-	global_env->decl(this, "println",  Value::macro( macro_println ));
 	global_env->decl(this, "assert",   Value::macro( macro_assert  ));
 	global_env->decl(this, "mod",      Value::macro( macro_mod     ));
 	global_env->decl(this, "random",   Value::macro( macro_random  ));
@@ -215,5 +263,16 @@ void Context::load_macros() {
 	global_env->decl(this, "typeof",   Value::macro( macro_typeof  ));
 	global_env->decl(this, "reduce",   Value::macro( macro_reduce  ));
 	global_env->decl(this, "map",      Value::macro( macro_map     ));
+
+	auto io = new MapContainer(this);
+	io->set(Value::symbol("print", this), Value::macro(macro_io_print));
+	io->set(Value::symbol("println", this), Value::macro(macro_io_println));
+	io->set(Value::symbol("readline", this), Value::macro(macro_io_readline));
+	global_env->decl(this, "io", Value::map(io));
+
+	auto time = new MapContainer(this);
+	time->set(Value::symbol("now", this), Value::macro(macro_time_now));
+	time->set(Value::symbol("runat", this), Value::macro(macro_time_runAt));
+	global_env->decl(this, "time", Value::map(time));
 
 }

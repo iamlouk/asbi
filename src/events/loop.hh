@@ -6,6 +6,7 @@
 #include <thread>
 #include <mutex>
 #include <functional>
+#include <chrono>
 #include "utils.hh"
 #include "../include/types.hh"
 
@@ -38,6 +39,21 @@ namespace asbi::evts {
 	};
 
 
+	class Timer {
+	public:
+		Timer(){}
+		Timer(LambdaContainer* callback, std::chrono::duration<double, std::milli> dueAt):
+			callback(callback), dueAt(dueAt) {}
+
+		LambdaContainer* callback;
+		std::chrono::duration<double, std::milli> dueAt;
+
+		bool operator<(const Timer &rhs) const {
+			return dueAt < rhs.dueAt;
+		}
+	};
+
+
 	class Loop {
 		// TODO: use c++ friend
 	private:
@@ -52,12 +68,15 @@ namespace asbi::evts {
 		Semaphore eventsSem;
 		std::deque<Event*> events;
 
+		SortedQueue<Timer> timers;
+
 		std::vector<std::thread> threads;
 		void newThread();
 
 		void addEvent(Event*); // called by workers
 		Event* getEvent(); // called by mainthread only (must know if there are running or left tasks)
-		void addTask(Task*); // called by manthread only (must be thread save against workers)
+		void addTask(Task*); // called by mainthread only (must be thread save against workers)
+		bool getNextTimer(Timer& out); // called by mainthread only, returns true if timer is ready
 	public:
 		Loop(Context* ctx, unsigned int start_threads);
 		~Loop();
@@ -65,6 +84,8 @@ namespace asbi::evts {
 		void start();
 
 		void addTask(LambdaContainer*, taskfn_t);
+		void addTimer(LambdaContainer*, double dueAt);
+
 		Task* getTask(); // called by workers
 
 		void addEvent(Task*, std::vector<Value>*, bool done);
