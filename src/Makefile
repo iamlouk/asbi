@@ -1,18 +1,23 @@
-CPPC=clang
-CPPFLAGS= -std=c++17 -Wall -Wextra
-LDFLAGS=  -std=c++17 -pthread -lstdc++ -lm -lreadline
-
 EXEC=../asbi
+VERBOSE=@
+
+# pro .cc ein .o? find-regel?
 OBJFILES=tokenizer.o parser.o utils.o ast-optimize.o mem.o vm.o ast.o types.o context.o macros.o procenv.o events/utils.o events/loop.o
+
+ifndef CC
+	$(error "do not call this Makefile directly")
+endif
 
 ifdef RELEASE
 	CPPFLAGS += -O3 -DNDEBUG
 	LDFLAGS  += -O3
 else
-	CPPFLAGS += -O0 -g# -fsanitize=address
-	LDFLAGS  += -O0 -g# -fsanitize=address
+	CPPFLAGS += -Og -g # -fsanitize=address
+	LDFLAGS  += -Og -g # -fsanitize=address
 	OBJFILES += tests.o
 endif
+
+CPPFLAGS += "-DASBI_VERSION=\"$(ASBI_VERSION)\""
 
 .PHONY: all clean
 
@@ -26,13 +31,16 @@ clean:
 	rm -f $(EXEC)
 
 $(EXEC): main.o $(OBJFILES)
-	$(CPPC) $(LDFLAGS) -o $@ $^
+	@echo " LD  " $@
+	$(VERBOSE) $(CPPC) $(LDFLAGS) -o $@ $^
 
 %.o: %.cc
-	$(CPPC) $(CPPFLAGS) -c -o $@ $<
+	@echo " C++ " $@
+	$(VERBOSE) $(CPPC) $(CPPFLAGS) -c -o $@ $<
 
 events/%.o: events/%.cc
-	$(CPPC) $(CPPFLAGS) -pthread -c -o $@ $<
+	@echo " C++ " $@
+	$(VERBOSE) $(CPPC) $(CPPFLAGS) -pthread -c -o $@ $<
 
 tokenizer.o: tokenizer.cc include/tokenizer.hh include/utils.hh
 parser.o: parser.cc include/parser.hh include/ast.hh include/tokenizer.hh include/utils.hh include/context.hh
@@ -43,6 +51,7 @@ vm.o: vm.cc include/vm.hh include/types.hh include/context.hh
 ast.o: ast.cc include/ast.hh include/vm.hh include/context.hh
 types.o: types.cc include/types.hh include/vm.hh include/mem.hh include/context.hh
 context.o: context.cc include/context.hh include/types.hh include/vm.hh
+
 main.o: main.cc include/context.hh include/types.hh include/utils.hh include/procenv.hh
 tests.o: tests.cc include/context.hh include/types.hh
 

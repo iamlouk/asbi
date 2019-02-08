@@ -1,0 +1,18 @@
+#!/usr/bin/env asbi
+
+io:println("alternative asbi repl (using asbi's eval):");
+
+(() -> {
+	// scope
+	$0 := nil;
+	_repl := () -> {
+		io:print(">_ ");
+		io:readline((line) -> if line != nil {
+			$0 = eval(line, 2);
+			io:println(" -> ", $0);
+			_repl();
+		})
+	};
+
+	_repl();
+})();

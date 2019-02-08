@@ -128,10 +128,9 @@ for i := 0; i < 10; i = i + 1 {
 
 io:println("bubblesorted: ", sorted);
 
-
 [toArray, mergesort, toLinkedList, randomList] := import("./linkedlist.asbi");
 import("./linkedlist.asbi"); // imports are "cached" (__imports)
-// io:println("__imports: ", __imports
+// io:println("__imports: ", __imports);
 
 io:println(
 	"mergesorted: ",
@@ -139,3 +138,11 @@ io:println(
 		mergesort(
 			toLinkedList(
 				randomList(20, 0, 100)))));
+
+
+name := env:get('USER');
+env:$("echo \"Hello " + (if name == nil { "user" } else { name }) + "\"!", (status, exitcode) ->
+	assert("`echo hello`", status == :ok & exitcode == 0));
+
+res := eval('17 + 5 * 5', 0);
+assert("eval", typeof(res) == :number & res == 42);

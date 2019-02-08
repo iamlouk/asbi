@@ -15,9 +15,9 @@ namespace utils {
 		what_message += msg;
 		what_message += " (line: ";
 		what_message += std::to_string(line);
-		what_message += ", '";
+		what_message += ", `";
 		what_message += c;
-		what_message += "')";
+		what_message += "`)";
 	}
 
 	parser_error::parser_error(const char* msg, tok::Token t):

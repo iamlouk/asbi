@@ -93,6 +93,10 @@ Context::Context(): evtloop(this, 0) {
 	names.__imports = new_stringconstant(str);
 	str = "exports";
 	names.exports = new_stringconstant(str);
+	str = "ok";
+	names.ok = new_stringconstant(str);
+	str = "err";
+	names.err = new_stringconstant(str);
 
 	load_macros();
 }

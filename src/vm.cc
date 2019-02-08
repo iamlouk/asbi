@@ -103,9 +103,9 @@ Value asbi::execute(std::vector<OpCode> opcodes, std::shared_ptr<Env> env, Conte
 				break;
 			}
 
-			if (a.type == type_t::String && b.type == type_t::String) {
+			if (a.type == type_t::String/* && b.type == type_t::String*/) {
 				auto sc = ctx->new_string(a._string->data);
-				sc->data += b._string->data;
+				sc->data += b/*._string->data*/.to_string(false);
 				ctx->push(Value::string(sc));
 				ctx->heap_size += sc->gc_size();
 				ctx->check_gc(env);

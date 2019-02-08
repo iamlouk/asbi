@@ -54,7 +54,7 @@ namespace tok {
 		Token next(void);
 		Token peek(void);
 	private:
-		Token next_string(void);
+		Token next_string(char);
 		Token next_number(void);
 
 		unsigned long pos;

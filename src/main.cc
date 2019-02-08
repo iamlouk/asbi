@@ -8,11 +8,13 @@
 #include "include/utils.hh"
 #include "include/procenv.hh"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+extern "C" {
+	#include <stdlib.h>
+	#include <stdio.h>
+	#include <unistd.h>
+	#include <readline/readline.h>
+	#include <readline/history.h>
+}
 
 using namespace asbi;
 
@@ -22,19 +24,16 @@ namespace tests { void run(); }
 
 static const char* get_prompt(char* buf, size_t bufsize) {
 	char* wdbuf = getcwd(NULL, 0);
-	snprintf(buf, bufsize - 1, "\033[0;34m[%s]:\033[0m\033[0;36m%s\033[0m \033[0;37m>_\033[0m ", getenv("USER"), wdbuf);
+	snprintf(buf, bufsize - 1, "\033[0;34m[%s]:\033[0m\033[0;36m%s\033[0m \033[0;37m>_\033[0m ", "asbi"/*getenv("USER")*/, wdbuf);
 	free(wdbuf);
 	return buf;
 }
 
-static void repl(int argc, const char* argv[]) {
+static void repl(Context &ctx) {
 	char* line = NULL;
-
-	Context ctx;
 	auto file = Value::string(".", &ctx);
 	ctx.global_env->decl(ctx.names.__file, file);
 	ctx.global_env->decl(ctx.names.__main, file);
-	load_procenv(&ctx, argc, argv);
 	auto env = std::make_shared<Env>(&ctx, ctx.global_env);
 
 	char prompt[256];
@@ -44,10 +43,15 @@ static void repl(int argc, const char* argv[]) {
 			continue;
 		}
 
-		std::string cppline = line;
-		auto res = ctx.run(line, env);
-		std::cout << "\033[0;37m->\033[0m " << res.to_string(true) << std::endl;
-		add_history(line);
+		try {
+			auto res = ctx.run(line, env);
+			std::cout << "\033[0;37m->\033[0m " << res.to_string(true) << std::endl;
+			add_history(line);
+		} catch (std::runtime_error e) {
+			std::cerr << "\033[0;31mError:\033[0m " << e.what() << ' ';
+			std::cerr << "\033[0;37m(C++ Exceptions cause Memory Leaks!)\033[0m" << '\n';
+		}
+
 		free(line);
 	}
 
@@ -55,7 +59,9 @@ static void repl(int argc, const char* argv[]) {
 }
 
 static void usage(const char *name) {
-	std::cout << "usage: " << name << " [--repl] [--file <file>] [--eval <code...>] [--help]" << '\n';
+	std::cout << "usage: " << name << " [--eval <code...>] [--help] [<file> | --repl] [script-args...]" << '\n';
+	std::cout << "\tASBI: A Stack Based Interpreter (version " << ASBI_VERSION << ", clang " << __clang_version__ << ")\n";
+	std::cout << "\tGo look at README.md and examples/ for help.\n";
 }
 
 int main(int argc, const char *argv[]) {
@@ -64,30 +70,16 @@ int main(int argc, const char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
+	Context ctx;
+	ctx.global_env->decl(ctx.names.__imports, Value::map(new MapContainer(&ctx)));
+
 	for (int i = 1; i < argc; i++) {
 		auto arg = argv[i];
 		if (strcmp(arg, "--repl") == 0) {
-			repl(argc, argv);
-		} else if (strcmp(arg, "--file") == 0 && i + 1 < argc) {
-			auto cfilepath = argv[++i];
-			auto filepath = std::string(cfilepath);
-			filepath = utils::normalize(filepath);
-			// std::cout << "loading file: " << filepath << '\n';
-
-			Context ctx;
-			auto filevalue = Value::string(utils::normalize(filepath).c_str(), &ctx);
-			ctx.global_env->decl(ctx.names.__file, filevalue);
-			ctx.global_env->decl(ctx.names.__main, filevalue);
-			ctx.global_env->decl(ctx.names.__imports, Value::map(new MapContainer(&ctx)));
-
-			load_procenv(&ctx, argc, argv);
-
-			std::string content;
-			utils::readfile(filepath, content);
-			ctx.run(content);
-			ctx.evtloop.start();
+			load_procenv(&ctx, argc, argv, i + 1);
+			repl(ctx);
+			break;
 		} else if (strcmp(arg, "--eval") == 0 && i + 1 < argc) {
-			Context ctx;
 			std::string str = argv[++i];
 			std::cout << ctx.run(str).to_string(true) << '\n';
 		} else if (strcmp(arg, "--help") == 0) {
@@ -96,6 +88,19 @@ int main(int argc, const char *argv[]) {
 		} else if (strcmp(arg, "--test") == 0) {
 			tests::run();
 #endif
+		} else if (arg[0] != '-') {
+			auto filepath = std::string(arg);
+			filepath = utils::normalize(filepath);
+
+			load_procenv(&ctx, argc, argv, i + 1);
+			ctx.global_env->decl(ctx.names.__file, Value::string(filepath.c_str(), &ctx));
+			ctx.global_env->decl(ctx.names.__main, Value::string(filepath.c_str(), &ctx));
+
+			std::string content;
+			utils::readfile(filepath, content);
+			ctx.run(content);
+			ctx.evtloop.start();
+			break;
 		} else {
 			usage(argv[0]);
 			exit(EXIT_FAILURE);

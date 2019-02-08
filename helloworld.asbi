@@ -1,0 +1,11 @@
+#!/usr/bin/env asbi
+
+name := env:argv.0;
+if name == nil | env:argv.1 != nil {
+	io:println("usage: helloworld.asbi <name>");
+	env:exit(1);
+};
+
+
+io:println("Hello, " + name + "!");
+

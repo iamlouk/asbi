@@ -40,6 +40,8 @@ namespace asbi {
 
 		mutable bool gc_visited = false;
 		void gc_unvisit() const;
+	public:
+		std::shared_ptr<Env> getOuter() { return outer; }
 	};
 
 	class Context {
@@ -74,6 +76,8 @@ namespace asbi {
 			StringContainer* __main;
 			StringContainer* __imports;
 			StringContainer* exports;
+			StringContainer* ok;
+			StringContainer* err;
 		} names;
 		StringContainer* new_stringconstant(const char*);
 		StringContainer* new_stringconstant(std::string&);

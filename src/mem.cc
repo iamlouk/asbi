@@ -27,7 +27,7 @@ void asbi::Context::check_gc(std::shared_ptr<Env> env){
 }
 
 void asbi::Context::gc(std::shared_ptr<Env> env){
-	// if (env != nullptr) std::cerr << "gc..." << '\n';
+	// std::cerr << "===ASBI===: GC running..." << '\n';
 
 	if (env != nullptr)
 		env->gc_visit();

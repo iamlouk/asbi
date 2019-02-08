@@ -8,16 +8,18 @@
 #include "include/utils.hh"
 #include "events/utils.hh"
 
-#include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+extern "C" {
+	#include <stdio.h>
+	#include <readline/readline.h>
+	#include <readline/history.h>
+}
 
 using namespace asbi;
 
 static Value macro_assert(int n, Context* ctx, std::shared_ptr<Env>) {
-	auto msg = ctx->pop();
-	auto val = ctx->pop();
 	if (n == 2) {
+		auto msg = ctx->pop();
+		auto val = ctx->pop();
 		if (!(val == Value::boolean(true))) {
 			std::cerr << "==asbi==: Assertion failed: " << val.to_string(true) << " (" << msg.to_string(false) << ")\n";
 			throw std::runtime_error("assertion failed");
@@ -29,9 +31,12 @@ static Value macro_assert(int n, Context* ctx, std::shared_ptr<Env>) {
 }
 
 static Value macro_mod(int n, Context* ctx, std::shared_ptr<Env>) {
+	if (n != 2)
+		throw std::runtime_error("mod macro usage error");
+
 	auto a = ctx->pop();
 	auto b = ctx->pop();
-	if (n != 2 || a.type != type_t::Number || b.type != type_t::Number)
+	if (a.type != type_t::Number || b.type != type_t::Number)
 		throw std::runtime_error("mod macro usage error");
 
 	return Value::number(static_cast<int>(a._number) % static_cast<int>(b._number));
@@ -45,19 +50,25 @@ static Value macro_random(int n, Context*, std::shared_ptr<Env>) {
 }
 
 static Value macro_toInt(int n, Context* ctx, std::shared_ptr<Env>) {
+	if (n != 1)
+		throw std::runtime_error("toInt macro usage error");
+
 	auto num = ctx->pop();
-	if (n != 1 || num.type != type_t::Number)
+	if (num.type != type_t::Number)
 		throw std::runtime_error("toInt macro usage error");
 
 	return Value::number(floor(num._number));
 }
 
 static Value macro_len(int n, Context* ctx, std::shared_ptr<Env>) {
+	if (n != 1)
+		throw std::runtime_error("len macro usage error");
+
 	auto val = ctx->pop();
-	if (n == 1 && val.type == type_t::Map)
+	if (val.type == type_t::Map)
 		return Value::number(val._map->vecdata.size());
 
-	if (n == 1 && val.type == type_t::String)
+	if (val.type == type_t::String)
 		return Value::number(val._string->data.size());
 
 	throw std::runtime_error("len macro usage error");
@@ -84,11 +95,14 @@ static Value macro_scope(int n, Context* ctx, std::shared_ptr<Env> env) {
 }
 
 static Value macro_import(int n, Context* ctx, std::shared_ptr<Env> env) {
+	if (n != 1)
+		throw std::runtime_error("import macro usage error or environment corruption");
+
 	auto arg = ctx->pop();
 	auto __file = env->lookup(ctx->names.__file);
 	auto __imports = ctx->global_env->lookup(ctx->names.__imports);
 	// std::cerr << "import(arg: " << arg.to_string(true) << ", __file: " << __file.to_string(true) << ", __imports: " << __imports.to_string(true) << ")\n";
-	if (n != 1 || arg.type != type_t::String || __file.type != type_t::String || __imports.type != type_t::Map)
+	if (arg.type != type_t::String || __file.type != type_t::String || __imports.type != type_t::Map)
 		throw std::runtime_error("import macro usage error or environment corruption");
 
 	auto dir = utils::dirname(__file._string->data);
@@ -115,10 +129,10 @@ static Value macro_import(int n, Context* ctx, std::shared_ptr<Env> env) {
 }
 
 static Value macro_typeof(int n, Context* ctx, std::shared_ptr<Env>) {
-	auto arg = ctx->pop();
 	if (n != 1)
 		throw std::runtime_error("typeof macro usage error");
 
+	auto arg = ctx->pop();
 	switch (arg.type) {
 	case type_t::Bool:
 		return Value::symbol("bool", ctx);
@@ -143,10 +157,13 @@ static Value macro_typeof(int n, Context* ctx, std::shared_ptr<Env>) {
 }
 
 static Value macro_reduce(int n, Context* ctx, std::shared_ptr<Env> env) {
+	if (n != 3)
+		throw std::runtime_error("reduce macro usage error");
+
 	auto map = ctx->pop();
 	auto acc = ctx->pop();
 	auto fn  = ctx->pop();
-	if (n != 3 || map.type != type_t::Map || fn.type != type_t::Lambda)
+	if (map.type != type_t::Map || fn.type != type_t::Lambda)
 		throw std::runtime_error("reduce macro usage error");
 
 	auto &vecdata = map._map->vecdata;
@@ -168,9 +185,12 @@ static Value macro_reduce(int n, Context* ctx, std::shared_ptr<Env> env) {
 }
 
 static Value macro_map(int n, Context* ctx, std::shared_ptr<Env> env) {
+	if (n != 2)
+		throw std::runtime_error("map macro usage error");
+
 	auto map = ctx->pop();
 	auto fn  = ctx->pop();
-	if (n != 2 || map.type != type_t::Map || fn.type != type_t::Lambda)
+	if (map.type != type_t::Map || fn.type != type_t::Lambda)
 		throw std::runtime_error("map macro usage error");
 
 	auto res = new MapContainer(ctx);
@@ -194,8 +214,11 @@ static Value macro_map(int n, Context* ctx, std::shared_ptr<Env> env) {
 }
 
 static Value macro_io_readline(int n, Context* ctx, std::shared_ptr<Env>) {
+	if (n != 1)
+		throw std::runtime_error("io:readline macro usage error");
+
 	auto lambda = ctx->pop();
-	if (n != 1 || lambda.type != type_t::Lambda)
+	if (lambda.type != type_t::Lambda)
 		throw std::runtime_error("io:readline macro usage error");
 
 	ctx->evtloop.addTask(lambda._lambda, [ctx](evts::callback_t cb) -> void {
@@ -236,13 +259,36 @@ static Value macro_time_now(int n, Context*, std::shared_ptr<Env>) {
 }
 
 static Value macro_time_runAt(int n, Context* ctx, std::shared_ptr<Env>) {
+	if (n != 2)
+		throw std::runtime_error("time:runat macro usage error");
+
 	auto timestamp = ctx->pop();
 	auto callback = ctx->pop();
-	if (n != 2 || timestamp.type != type_t::Number || callback.type != type_t::Lambda)
+	if (timestamp.type != type_t::Number || callback.type != type_t::Lambda)
 		throw std::runtime_error("time:runat macro usage error");
 
 	ctx->evtloop.addTimer(callback._lambda, timestamp._number);
 	return Value::nil();
+}
+
+static Value macro_eval(int n, Context* ctx, std::shared_ptr<Env> callerenv) {
+	if (n != 2)
+		throw std::runtime_error("eval macro usage error");
+
+	auto string = ctx->pop();
+	auto envdepth = ctx->pop();
+	if (string.type != type_t::String || envdepth.type != type_t::Number)
+		throw std::runtime_error("eval macro usage error");
+
+	auto env = callerenv;
+	for (int i = 0; i < envdepth._number; i++) {
+		if (callerenv->getOuter() == nullptr)
+			break;
+
+		env = callerenv->getOuter();
+	}
+
+	return ctx->run(string._string->data, env);
 }
 
 void Context::load_macros() {
@@ -263,6 +309,7 @@ void Context::load_macros() {
 	global_env->decl(this, "typeof",   Value::macro( macro_typeof  ));
 	global_env->decl(this, "reduce",   Value::macro( macro_reduce  ));
 	global_env->decl(this, "map",      Value::macro( macro_map     ));
+	global_env->decl(this, "eval",     Value::macro( macro_eval    ));
 
 	auto io = new MapContainer(this);
 	io->set(Value::symbol("print", this), Value::macro(macro_io_print));

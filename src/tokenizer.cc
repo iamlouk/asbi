@@ -22,7 +22,7 @@ static bool is_identifier(char c) {
 	return (c == '_' || c == '$' || c == '@' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9'));
 }
 
-Token Tokenizer::next_string() {
+Token Tokenizer::next_string(char strstart) {
 	std::string *str = new std::string("");
 	pos++;
 	while (pos < source.length()) {
@@ -33,10 +33,12 @@ Token Tokenizer::next_string() {
 			case 'n': c = '\n'; break;
 			case 't': c = '\t'; break;
 			case 'r': c = '\r'; break;
+			case '"': c = '"';  break;
+			case '\'': c = '\''; break;
 			default:
 				throw utils::tokenizer_error("not escapeable", line, c);
 			}
-		} else if (c == '"')
+		} else if (c == strstart)
 			break;
 		*str += c;
 	}
@@ -47,7 +49,7 @@ Token Tokenizer::next_number() {
 	std::string str = "";
 	bool contains_dot = false;
 	char c = source[pos];
-	while (('0' <= c && c <= '9') || c == '.') {
+	while (('0' <= c && c <= '9') || c == '.' || (c >= 'a' && c <= 'z')) {
 		str += c;
 		if (c == '.')
 			contains_dot = true;
@@ -59,7 +61,7 @@ Token Tokenizer::next_number() {
 	if (contains_dot)
 		return Token(Real, std::stod(str, nullptr), line);
 	else
-		return Token(Int, std::stoi(str, nullptr, 10), line);
+		return Token(Int, std::stoi(str, nullptr, 0), line);
 }
 
 Token Tokenizer::peek() {
@@ -93,7 +95,8 @@ Token Tokenizer::next() {
 		pos++;
 		return next();
 	case '"':
-		return next_string();
+	case '\'':
+		return next_string(c);
 	case '(':
 		pos++;
 		return Token(LeftBracket, line);
